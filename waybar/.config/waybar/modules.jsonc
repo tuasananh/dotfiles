@@ -1,0 +1,199 @@
+{
+	"custom/arch": {
+		"format": "󰣇",
+		"tooltip": true,
+		"tooltip-format": "btw"
+	},
+
+
+	"hyprland/workspaces": {
+		"format": "{name}",
+		"format-icons": {
+			"urgent": "",
+			"active": "",
+			"default": ""
+		}
+	},
+	"hyprland/window": {
+		"format": "{}",
+		"rewrite": {
+			"": "Desktop",
+			"zsh": "Terminal",
+			"~": "Terminal"
+		}
+	},
+	"idle_inhibitor": {
+		"format": "{icon}",
+		"format-icons": {
+			"activated": " ",
+			"deactivated": " "
+		}
+	},
+	"custom/backlight": {
+        "exec": "~/.config/shared/scripts/get_brightness.sh",
+        "return-type": "json",
+		// "interval":
+		"format": "{icon} {percentage}%",
+		"format-icons": [
+			"", "", "", "", "", "", "", "", ""
+		],
+		// "align":
+		// "justify":
+		// "rotate":
+		// "states":
+		// "on-click":
+		// "on-click-middle":
+		// "on-click-right":
+		// "on-update":
+		"on-scroll-up": "~/.config/shared/scripts/brightness.sh up",
+		"on-scroll-down": "~/.config/shared/scripts/brightness.sh down",
+		// "smooth-scrolling-threshold":
+		"reverse-scrolling": true,
+		// "reverse-mouse-scrolling":
+		// "scroll-step":
+		// "min-brightness":
+		// "tooltip":
+		"tooltip-format": "Screen Brightness"
+		// "menu":
+		// "menu-file":
+		// "menu-actions":
+		// "expand":
+	},
+	/*-------------------
+	    Output device
+	-------------------*/
+    "tray": {
+        "spacing": 5,
+        "cursor": true
+    },
+
+	"pulseaudio#output": {
+		"format": "{icon}{volume}%",
+		// "format-bluetooth":
+		"format-muted": "{icon} {volume}%",
+		// "format-source":
+		// "format-source-muted":
+		"format-icons": {
+			"default": [ " ", " ", "  " ],
+			"default-muted": " ",
+			"headphone": "󰋋 ",
+			"headphone-muted": "󰟎 ",
+			"headset": "󰋎 ",
+			"headset-muted": "󰋐 "
+		},
+		// "rotate":
+		// "states":
+		// "min-length": 6,
+		// "max-length": 6,
+		// "align":
+		// "justify":
+		// "scroll-step":
+		"on-click": "~/.config/shared/scripts/volume.sh output mute",
+		// "on-click-middle":
+		// "on-click-right":
+		// "on-update":
+		"on-scroll-up": "~/.config/shared/scripts/volume.sh output up",
+		"on-scroll-down": "~/.config/shared/scripts/volume.sh output down",
+		// "smooth-scrolling-threshold":
+		// "tooltip":
+		"tooltip-format": "<b>Output Device</b>: {desc}",
+		// "max-volume":
+		// "ignored-sinks":
+		"reverse-scrolling": true
+		// "reverse-mouse-scrolling":
+		// "menu":
+		// "menu-file":
+		// "menu-actions":
+		// "expand":
+	},
+
+	/*----------------
+	    Microphone
+	----------------*/
+
+	"pulseaudio#input": {
+		"format": "{format_source}",
+		// "format-bluetooth":
+		// "format-muted":
+		"format-source": " {volume}%",
+		"format-source-muted": " {volume}%",
+		// "format-icons":
+		// "rotate":
+		// "states":
+		// "min-length": 7,
+		// "max-length": 7,
+		// "align":
+		// "justify":
+		// "scroll-step":
+		"on-click": "~/.config/shared/scripts/volume.sh input mute",
+		// "on-click-middle":
+		// "on-click-right":
+		// "on-update":
+		"on-scroll-up": "~/.config/shared/scripts/volume.sh input up",
+		"on-scroll-down": "~/.config/shared/scripts/volume.sh input down",
+		// "smooth-scrolling-threshold":
+		// "tooltip":
+		"tooltip-format": "<b>Input Device</b>: {desc}",
+		// "max-volume":
+		// "ignored-sinks":
+		"reverse-scrolling": true
+		// "reverse-mouse-scrolling":
+		// "menu":
+		// "menu-file":
+		// "menu-actions":
+		// "expand":
+	},
+	"network": {
+		"format-wifi": "{icon} {essid} ({signalStrength}%)",
+		"format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+		"format-ethernet": "󰊗 {ipaddr}/{cidr}",
+		"format-disconnected": "⚠ Disconnected",
+		"tooltip-format": "{ifname} via {gwaddr}",
+    "on-click": "wezterm start --class floating-nmtui -- bash -ic \"sleep 0.1; nmtui\""
+	},
+	"bluetooth": {
+		// "controller": "controller1", // specify the alias of the controller if there are more than 1 on the system
+		"format": " {status}",
+		"format-disabled": "", // an empty format will hide the module
+		"format-connected": " {num_connections}",
+		"tooltip-format": "{controller_alias}\t{controller_address}",
+		"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+		"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+		"on-click": "blueman-manager"
+	},
+	"battery": {
+		"states": {
+			"warning": 30,
+			"critical": 15
+		},
+		"format": "{icon} {capacity}%",
+		"format-icons": {
+			"default": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+			"charging": ["󰢟 ", "󰢜 ", "󰂆 ", "󰂇 ", "󰂈 ", "󰢝 ", "󰂉 ", "󰢞 ", "󰂊 ", "󰂋 ", "󰂅 "]
+		}
+	},
+	"clock": {
+		"format": " {:%H:%M}",
+		"format-alt": " {:%A, %B %d, %Y (%R)}",
+		"tooltip-format": "<tt><big>{calendar}</big></tt>",
+		"calendar": {
+			"mode"          : "year",
+			"mode-mon-col"  : 3,
+		    // "weeks-pos"     : "right",
+		    "on-scroll"     : 1,
+		    "format": {
+			    "months":     "<span color='#ffead3'><b>{}</b></span>",
+			    "days":       "<span color='#ecc6d9'><b>{}</b></span>",
+			      // "weeks":      "<span color='#99ffdd'><b>W{}</b></span>",
+			      "weekdays":   "<span color='#ffcc66'><b>{}</b></span>",
+			      "today":      "<span color='#ff6699'><b><u>{}</u></b></span>"
+		    }
+		},
+		"actions":  {
+			"on-click-right": "mode",
+			"on-scroll-up": "shift_down",
+			"on-scroll-down": "shift_up"
+		}
+	}
+
+}
