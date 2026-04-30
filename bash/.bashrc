@@ -1,23 +1,23 @@
 # ~/.bashrc
-eval "$(starship init bash)"
 
 export EDITOR=nvim
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-PS1='[\u@\h \W]\$ '
+[[ $- == *i* ]] && source -- /usr/share/blesh/ble.sh --attach=none
+
+eval "$(starship init bash)"
 
 eval "$(zoxide init bash)"
 
-# [[ ${BLE_VERSION-} ]] && ble-attach
-EMSDK_QUIET=1 . "/usr/local/lib/emsdk/emsdk_env.sh"
+source /usr/share/nvm/init-nvm.sh
 
-export NVM_DIR="$HOME/.config/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+# I did not configure emsdk
+# EMSDK_QUIET=1 . "/usr/local/lib/emsdk/emsdk_env.sh"
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
 
 export NEWT_COLORS="root=default,default:window=default,default:border=#cba6f7,default:shadow=default,default:title=#cba6f7,default:actbutton=#cdd6f4,#313244:button=#1e1e2e,#cba6f7:compactbutton=#cdd6f4,#313244:checkbox=#cdd6f4,#313244:actcheckbox=#1e1e2e,#cba6f7:entry=#cdd6f4,#313244:label=#cdd6f4,default:listbox=#cdd6f4,default:actlistbox=#1e1e2e,#cba6f7:sellistbox=#1e1e2e,#cba6f7:actsellistbox=#1e1e2e,#cba6f7:textbox=#cdd6f4,default:acttextbox=#1e1e2e,#cba6f7:helpline=default,default:roottext=default,default"
 
@@ -29,8 +29,6 @@ function y() {
   [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd" || exit
   rm -f -- "$tmp"
 }
-
-source -- /usr/share/blesh/ble.sh
 
 cp_cc() {
   # Define ANSI color codes
@@ -103,11 +101,4 @@ cp_run() {
   fi
 }
 
-# pnpm
-export PNPM_HOME="/home/tuasananh/.local/share/pnpm"
-case ":$PATH:" in
-*":$PNPM_HOME:"*) ;;
-*) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
-export OLLAMA_API_KEY="ollama-local"
+[[ ! ${BLE_VERSION-} ]] || ble-attach
