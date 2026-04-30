@@ -22,13 +22,56 @@ Go through with the `archinstall` script. My choices:
 - Swap on zram with zstd
 - systemd-boot with UKI enabled
 - Profile: Minimal
-- For applications, enable Bluetooth, tuned, and firewalld, and all fonts
+- Kernel: linux-lts
+- For applications, enable Bluetooth, pipewire, tuned, and firewalld, and all fonts
 - For network, use network manager with iwd backend
-- For additional packages, choose `7zip base-devel brightnessctl btop
-chromium clang cliphist fcitx5 fcitx5-bamboo fcitx5-configtool fd firefox fzf
-git git-filter-repo git-lfs github-cli hyprland kitty lazygit less mako man-db
-man-pages neovim nvm progress rofi rofi-calc rustup starship stow swaybg tealdeer
-unzip uwsm vim waybar wl-clipboard zoxide yazi`
+- For additional packages, choose:
+  - 7zip
+  - base-devel
+  - brightnessctl
+  - btop
+  - chromium
+  - clang
+  - cliphist
+  - cmake
+  - docker
+  - docker-compose
+  - fcitx5
+  - fcitx5-bamboo
+  - fcitx5-configtool
+  - fd
+  - firefox
+  - fzf
+  - git
+  - git-filter-repo
+  - git-lfs
+  - github-cli
+  - hyprland
+  - kitty
+  - lazygit
+  - less
+  - mako
+  - man-db
+  - man-pages
+  - neovim
+  - nvm
+  - progress
+  - ripgrep
+  - rofi
+  - rofi-calc
+  - rustup
+  - starship
+  - stow
+  - swaybg
+  - tealdeer
+  - unzip
+  - uv
+  - uwsm
+  - vim
+  - waybar
+  - wl-clipboard
+  - zoxide
+  - yazi
 
 Then just install.
 
@@ -36,16 +79,6 @@ Then just install.
 
 If you haven't select mirrors, you can edit `/etc/pacman.d/mirrorlist`, should
 uncomment your country and Worldwide only.
-
-After logging into the user account, use:
-
-```bash
-uwsm start select
-```
-
-and then select Hyprland to start.
-
-Open kitty terminal with WIN + Q.
 
 Configure git user.name and user.email:
 
@@ -78,13 +111,15 @@ corepack enable pnpm
 pnpm -v
 ```
 
-After that, run `nvim` and wait for its installation.
-
 After we're done, enable `waybar` with:
 
 ```bash
 systemctl enable --now --user waybar
 ```
+
+Reboot and use `uwsm start hyprland.desktop` to start hyprland, use `WIN + T` to open up the terminal.
+
+After that, run `nvim` and wait for its installation.
 
 I recommend changing the DNS resolver (to access more websites):
 
@@ -93,7 +128,6 @@ sudo nvim /etc/systemd/resolved.conf
 ```
 
 Change `DNS` to `1.1.1.1 1.0.0.1` and uncomment the fallback:
-
 <!-- markdownlint-disable MD013 -->
 ```conf
 [Resolve]
@@ -108,32 +142,18 @@ After this, run:
 systemctl enable --now systemd-resolved
 ```
 
-We don't have audio yet, so install `pipewire`:
-
-```bash
-sudo pacman -S pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber
-sudo pacman -S sof-firmware 
-```
-
-The package `jack2` may be in conflict, just remove it.
-
-Enable the services:
-
-```bash
-systemctl enable --user --now pipewire
-systemctl enable --user --now pipewire-pulse
-systemctl enable --user --now wireplumber
-```
-
 On my machine (Legion Pro 7i 16IRX8H), there is an issue with sound driver which
 causes the speaker to die after about 30 seconds of inactivity.
 
 To fix this issue, we will do:
 
+Credit to [this repo](https://github.com/DanielWeiner/tas2781-fix-16IRX8H)
+<!-- markdownlint-disable MD013 -->
 ```bash
-echo "options snd_hda_intel power_save=0 power_save_controller=N" | sudo tee /etc/modprobe.d/50-audio-powersave.conf
+sudo pacman -S jq i2c-tools
+curl -s https://raw.githubusercontent.com/DanielWeiner/tas2781-fix-16IRX8H/refs/heads/main/install.sh | bash -s --
 ```
-
+<!-- markdownlint-enable MD013 -->
 This will disable the power saving feature which turn the speaker off for some
 reason and fail to turn it back on
 
@@ -171,5 +191,9 @@ sudo pacman -S libvpl vpl-gpu-rt
 NVIDIA graphics card:
 
 ```bash
-
+# dkms modules will not load without this package
+sudo pacman -S linux-lts-headers
+sudo pacman -S nvidia-open-dkms
 ```
+
+Reboot your system
