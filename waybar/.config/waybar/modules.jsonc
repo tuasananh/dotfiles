@@ -74,12 +74,12 @@
 		// "format-source":
 		// "format-source-muted":
 		"format-icons": {
-			"default": [ " ", " ", "  " ],
+			"default": [ " ", " ", " " ],
 			"default-muted": " ",
 			"headphone": "󰋋 ",
 			"headphone-muted": "󰟎 ",
 			"headset": "󰋎 ",
-			"headset-muted": "󰋐 "
+			"headset-muted":"󰋐 "
 		},
 		// "rotate":
 		// "states":

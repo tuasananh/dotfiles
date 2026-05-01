@@ -1,3 +1,5 @@
+@import "mocha.css";
+
 * {
     font-size: 15px;
     transition: background-color .3s ease-out;
@@ -5,7 +7,7 @@
 
 window#waybar {
     background: transparent;
-    color: #c0caf5;
+    color: @text;
     font-family: monospace; 
     transition: background-color .5s;
 }
@@ -21,7 +23,7 @@ window#waybar {
 .modules-center,
 .modules-right
 {
-    background: rgba(0, 0, 8, .7);
+    background: @base;
 }
 
 .modules-left {
@@ -31,7 +33,6 @@ window#waybar {
 .modules-center {
     padding: 0 10px;
 }
-
 
 #clock,
 #battery,
@@ -75,7 +76,7 @@ window#waybar {
 #power-profiles-daemon:hover,
 #language:hover,
 #mpd:hover {
-    background: rgba(26, 27, 38, 0.9);
+    background: @surface0;
 }
 
 #pulseaudio.horizontal {
@@ -83,7 +84,7 @@ window#waybar {
 }
 
 #workspaces {
-    background: rgba(0, 0, 8, .7);
+    background: @base;
     margin: 0 10px;
     border-radius: 15px;
 }
@@ -94,24 +95,27 @@ window#waybar {
     SpaceMono Nerd Font,
     feather;
   font-size: 13pt;
-  color: #c0caf5;
+  color: @text;
   border:none;
   border-radius: 15px;
+
+  /* min-height: 0px; */
+  padding: 2px 10px;
 }
 
 #workspaces button.active {
   font-weight: 900;
-    background: #13131d; 
+  background: @surface0; 
 }
 
 #workspaces button:hover {
-  background: #11111b;
-  color: #cdd6f4;
+  background: @surface1;
+  color: @text;
   box-shadow: none;
 }
 
 #window {
-	font-family: sans-serif;
+    font-family: sans-serif;
 }
 
 #custom-arch {
@@ -121,5 +125,6 @@ window#waybar {
     transition: color .5s;
 }
 #custom-arch:hover {
-    color: #1793d1;
+    /* Mapped the classic Arch blue to Catppuccin's blue */
+    color: @blue; 
 }
