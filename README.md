@@ -23,7 +23,8 @@ Go through with the `archinstall` script. My choices:
 - systemd-boot with UKI enabled
 - Profile: Minimal
 - Kernel: linux-lts
-- For applications, enable Bluetooth, pipewire, tuned, and firewalld, and all fonts
+- For applications, enable Bluetooth, pipewire, print service, tuned, and firewalld,
+and all fonts
 - For network, use network manager with iwd backend
 - For additional packages, choose:
   - 7zip
@@ -34,6 +35,7 @@ Go through with the `archinstall` script. My choices:
   - clang
   - cliphist
   - cmake
+  - dbeaver
   - docker
   - docker-compose
   - fcitx5
@@ -47,13 +49,20 @@ Go through with the `archinstall` script. My choices:
   - git-lfs
   - github-cli
   - hyprland
+  - hyprpolkitagent
+  - i2c-tools
+  - intel-media-driver
+  - jdk21-openjdk
+  - jq
   - kitty
   - lazygit
   - less
+  - linux-lts-headers
   - mako
   - man-db
   - man-pages
   - neovim
+  - nvidia-open-dkms
   - nvm
   - progress
   - ripgrep
@@ -68,10 +77,13 @@ Go through with the `archinstall` script. My choices:
   - uv
   - uwsm
   - vim
+  - vpl-gpu-rt
+  - vulkan-intel
   - waybar
   - wl-clipboard
-  - zoxide
+  - xdg-desktop-portal-hyprland
   - yazi
+  - zoxide
 
 Then just install.
 
@@ -117,7 +129,8 @@ After we're done, enable `waybar` with:
 systemctl enable --now --user waybar
 ```
 
-Reboot and use `uwsm start hyprland.desktop` to start hyprland, use `WIN + T` to open up the terminal.
+Reboot and use `uwsm start hyprland.desktop` to start hyprland, use `WIN + T` to
+open up the terminal.
 
 After that, run `nvim` and wait for its installation.
 
@@ -150,50 +163,37 @@ To fix this issue, we will do:
 Credit to [this repo](https://github.com/DanielWeiner/tas2781-fix-16IRX8H)
 <!-- markdownlint-disable MD013 -->
 ```bash
-sudo pacman -S jq i2c-tools
 curl -s https://raw.githubusercontent.com/DanielWeiner/tas2781-fix-16IRX8H/refs/heads/main/install.sh | bash -s --
 ```
 <!-- markdownlint-enable MD013 -->
 This will disable the power saving feature which turn the speaker off for some
 reason and fail to turn it back on
 
-Next, install an authentication agent:
+Next, enable the authentication agent:
 
 ```bash
-sudo pacman -S hyprpolkitagent
 systemctl enable --user hyprpolkitagent
 ```
 
-Install the desktop portal:
+Enable docker:
 
 ```bash
-sudo pacman -S xdg-desktop-portal-hyprland
+systemctl enable --now docker
+sudo groupadd docker
+sudo usermod -aG docker $(whoami)
 ```
 
-Intel graphics:
+Install `yay` for `ble.sh` (bash on crack):
 
 ```bash
-sudo pacman -S mesa vulkan-intel
+sudo pacman -S --needed git base-devel
+git clone https://aur.archlinux.org/yay-bin.git
+cd yay-bin
+makepkg -si
 ```
 
-For hardware acceleration, VAAPI:
+Install `ble.sh`:
 
 ```bash
-sudo pacman -S intel-media-driver
+yay -S blesh-git
 ```
-
-and VPL:
-
-```bash
-sudo pacman -S libvpl vpl-gpu-rt
-```
-
-NVIDIA graphics card:
-
-```bash
-# dkms modules will not load without this package
-sudo pacman -S linux-lts-headers
-sudo pacman -S nvidia-open-dkms
-```
-
-Reboot your system
