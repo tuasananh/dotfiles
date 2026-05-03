@@ -41,6 +41,8 @@ and all fonts
 - For network, use network manager with iwd backend
 - For additional packages, choose:
   - 7zip
+  - act 
+  - aria2
   - base-devel
   - brightnessctl
   - btop
@@ -62,6 +64,7 @@ and all fonts
   - git-filter-repo
   - git-lfs
   - github-cli
+  - gptfdisk
   - hyprland
   - hyprpicker
   - hyprpolkitagent
@@ -69,6 +72,7 @@ and all fonts
   - i2c-tools
   - imagemagick
   - intel-media-driver
+  - intellij-idea-community-edition
   - jdk21-openjdk
   - jq
   - kitty
@@ -79,9 +83,12 @@ and all fonts
   - mako
   - man-db
   - man-pages
+  - maven
   - mermaid-cli
   - neovim
+  - networkmanager-dmenu
   - nvidia-open-dkms
+  - nvidia-prime
   - nvm
   - nwg-look
   - progress
@@ -103,6 +110,7 @@ and all fonts
   - vulkan-intel
   - waybar
   - wl-clipboard
+  - xdg-desktop-portal-gtk
   - xdg-desktop-portal-hyprland
   - yazi
   - zoxide
@@ -306,4 +314,34 @@ Now install the Catppuccin Mocha theme:
 yay -S catppuccin-gtk-theme-mocha
 ```
 
-Open `nwg-look` and choose the first theme.
+Open `nwg-look` and choose the first theme. After that change the fonts to Noto
+Sans Regular and make Color theme prefer dark.
+
+### Unblock bluetooth
+
+By default, bluetooth may be blocked, run:
+
+```bash
+rfkill unblock bluetooth
+```
+
+to unblock it.
+
+### Use aria2c instead of curl for makepkg
+
+```bash
+sudo nvim /etc/makepkg.conf 
+```
+
+For `DLAGENTS`, use `aria2c`:
+<!-- markdownlint-disable MD013 -->
+```conf
+DLAGENTS=('file::/usr/bin/curl -qgC - -o %o %u'
+          'ftp::/usr/bin/curl -qgfC - --ftp-pasv --retry 3 --retry-delay 3 -o %o %u'
+          'http::/usr/bin/aria2c -s 16 -x 16 -k 1M --stream-piece-selector=random --min-split-size=1M %u -o %o'
+          'https::/usr/bin/aria2c -s 16 -x 16 -k 1M --stream-piece-selector=random --min-split-size=1M %u -o %o'
+          'rsync::/usr/bin/rsync --no-motd -z %u %o'
+          'scp::/usr/bin/scp -C %u %o')
+```
+
+<!-- markdownlint-enable MD013 -->
