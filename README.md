@@ -31,7 +31,7 @@ Use `help` inside `iwctl` to see what to do.
 
 Go through with the `archinstall` script. My choices:
 
-- Best-effort default partition layout with ext4
+- Best-effort default partition layout with btrfs, luks with snapper, use the standard subvolumes
 - Swap on zram with zstd
 - Limine bootloader
 - Profile: Minimal
@@ -78,12 +78,11 @@ and all fonts
   - kitty
   - lazygit
   - less
-  - linux-lts-headers
+  - linux-headers
   - luarocks
   - mako
   - man-db
   - man-pages
-  - maven
   - mermaid-cli
   - neovim
   - networkmanager-dmenu
@@ -95,6 +94,7 @@ and all fonts
   - ripgrep
   - rofi
   - rofi-calc
+  - rofi-emoji
   - rustup
   - starship
   - stow
