@@ -170,6 +170,13 @@ Since waybar is not currently configured, we just configure it:
 systemctl enable --user waybar
 ```
 
+After this, reboot your computer.
+
+### Begin hyprland
+
+Use `uwsm start hyprland.desktop` to start hyprland, use `WIN + T` to
+open up the terminal. And a browser for ease of copy and paste.
+
 ### Installing some dev dependencies
 
 Install `nodejs` with `pnpm`:
@@ -180,13 +187,6 @@ npm install -g corepack
 corepack enable pnpm
 pnpm -v
 ```
-
-After this, reboot your computer.
-
-### Begin hyprland
-
-Use `uwsm start hyprland.desktop` to start hyprland, use `WIN + T` to
-open up the terminal. And a browser for ease of copy and paste.
 
 ### Setup nvim
 
