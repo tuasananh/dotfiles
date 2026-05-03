@@ -192,6 +192,38 @@ pnpm -v
 
 After that, run `nvim` and wait for its installation.
 
+### Installing AUR deps
+
+Install `yay` for `ble.sh` (bash on crack):
+
+```bash
+sudo pacman -S --needed git base-devel
+git clone https://aur.archlinux.org/yay-bin.git
+cd yay-bin
+makepkg -si
+```
+
+Install `ble.sh`:
+
+```bash
+yay -S blesh-git
+```
+
+Now install brave:
+
+```bash
+yay -S brave-bin
+```
+
+Now install the Catppuccin Mocha theme:
+
+```bash
+yay -S catppuccin-gtk-theme-mocha
+```
+
+Open `nwg-look` and choose the first theme. After that change the fonts to Noto
+Sans Regular and make Color theme prefer dark.
+
 ### Change DNS resolver
 
 I recommend changing the DNS resolver (to access more websites):
@@ -284,38 +316,6 @@ sudo usermod -aG docker $(whoami)
 ```
 
 Reboot your computer.
-
-### Installing AUR deps
-
-Install `yay` for `ble.sh` (bash on crack):
-
-```bash
-sudo pacman -S --needed git base-devel
-git clone https://aur.archlinux.org/yay-bin.git
-cd yay-bin
-makepkg -si
-```
-
-Install `ble.sh`:
-
-```bash
-yay -S blesh-git
-```
-
-Now install brave:
-
-```bash
-yay -S brave-bin
-```
-
-Now install the Catppuccin Mocha theme:
-
-```bash
-yay -S catppuccin-gtk-theme-mocha
-```
-
-Open `nwg-look` and choose the first theme. After that change the fonts to Noto
-Sans Regular and make Color theme prefer dark.
 
 ### Unblock bluetooth
 
