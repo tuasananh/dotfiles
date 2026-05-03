@@ -33,16 +33,16 @@ Go through with the `archinstall` script. My choices:
 
 - Best-effort default partition layout with ext4
 - Swap on zram with zstd
-- systemd-boot with UKI enabled
+- Limine bootloader
 - Profile: Minimal
-- Kernel: linux-lts
+- Kernel: linux
 - For applications, enable Bluetooth, pipewire, print service, tuned, and firewalld,
 and all fonts
 - For network, use network manager with iwd backend
 - For additional packages, choose:
   - 7zip
-  - act 
-  - aria2
+  - act
+  - audacity
   - base-devel
   - brightnessctl
   - btop
@@ -188,7 +188,7 @@ After this, reboot your computer.
 Use `uwsm start hyprland.desktop` to start hyprland, use `WIN + T` to
 open up the terminal. And a browser for ease of copy and paste.
 
-### Setupnvim
+### Setup nvim
 
 After that, run `nvim` and wait for its installation.
 
@@ -327,7 +327,11 @@ rfkill unblock bluetooth
 
 to unblock it.
 
-### Use aria2c instead of curl for makepkg
+### Use aria2c instead of curl for makepkg (optional)
+
+```bash
+sudo pacman -S aria2
+```
 
 ```bash
 sudo nvim /etc/makepkg.conf 
