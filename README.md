@@ -158,19 +158,16 @@ cd yay-bin
 makepkg -si
 ```
 
-Go to the dotfiles directory and run:
-
-```bash
-yay -S $(cat included_packages)
-```
-
-### Stow config files
+### Install packages and config files
 
 Run the following to stow the config files:
 
 ```bash
+cd ~
 git clone https://github.com/tuasananh/dotfiles
 cd dotfiles
+# Download preset packages
+yay -S $(cat included_packages)
 git lfs install 
 git lfs pull
 rm ~/.bashrc
