@@ -224,6 +224,35 @@ yay -S catppuccin-gtk-theme-mocha
 Open `nwg-look` and choose the first theme. After that change the fonts to Noto
 Sans Regular and make Color theme prefer dark.
 
+### Configure limine bootloader
+
+Paste this for Catppuccin Mocha theme on top of the `/boot/limine/limine.conf` file:
+
+```conf
+term_palette: 1e1e2e;f38ba8;a6e3a1;f9e2af;89b4fa;f5c2e7;94e2d5;cdd6f4
+term_palette_bright: 585b70;f38ba8;a6e3a1;f9e2af;89b4fa;f5c2e7;94e2d5;cdd6f4
+term_background: 1e1e2e
+term_foreground: cdd6f4
+term_background_bright: 585b70
+term_foreground_bright: cdd6f4
+```
+
+If dual booting, add Windows inside as well, it is something like:
+
+```conf
+/Windows 11:
+    protocol: efi 
+    path: guid(<guid>):/EFI/Microsoft/Boot/bootmgfw.efi
+```
+
+The UUID can be found by using:
+
+```bash
+lsblk -dno PARTUUID /dev/nvmeXXXX
+```
+
+where /dev/nvmeXXXX
+
 ### Change DNS resolver
 
 I recommend changing the DNS resolver (to access more websites):
@@ -246,8 +275,8 @@ FallbackDNS=9.9.9.9#dns.quad9.net 2620:fe::9#dns.quad9.net 8.8.8.8#dns.google 20
 # Route all DNS traffic through these servers
 Domains=~.
 
-# Enforce DNS-over-TLS (Strict mode)
-DNSOverTLS=yes
+# We're going with opportunistic here instead of yes because captive portal will break
+DNSOverTLS=opportunistic
 
 # Allow DNSSEC downgrade if routing issues occur (optional but recommended)
 DNSSEC=allow-downgrade
