@@ -9,14 +9,17 @@
     - [Connect to the internet](#connect-to-the-internet)
     - [Stow config files](#stow-config-files)
     - [Enable waybar](#enable-waybar)
-    - [Installing some dev dependencies](#installing-some-dev-dependencies)
     - [Begin hyprland](#begin-hyprland)
-    - [Setupnvim](#setupnvim)
+    - [Installing some dev dependencies](#installing-some-dev-dependencies)
+    - [Setup nvim](#setup-nvim)
+    - [Installing AUR deps](#installing-aur-deps)
+    - [Configure limine bootloader](#configure-limine-bootloader)
     - [Change DNS resolver](#change-dns-resolver)
     - [Fix audio issues](#fix-audio-issues)
     - [Authentication agent](#authentication-agent)
     - [Docker](#docker)
-    - [Installing AUR deps](#installing-aur-deps)
+    - [Unblock bluetooth](#unblock-bluetooth)
+    - [Use aria2c instead of curl for makepkg (optional)](#use-aria2c-instead-of-curl-for-makepkg-optional)
 <!--toc:end-->
 
 Boot up the live ISO and then connect to WiFi using `iwctl`, then use
@@ -31,7 +34,9 @@ Use `help` inside `iwctl` to see what to do.
 
 Go through with the `archinstall` script. My choices:
 
-- Best-effort default partition layout with btrfs, luks with snapper, use the standard subvolumes
+- Setup the mirrorlist
+- Best-effort default partition layout with btrfs, luks with snapper, use the
+standard subvolumes
 - Swap on zram with zstd
 - Limine bootloader
 - Profile: Minimal
@@ -376,5 +381,4 @@ DLAGENTS=('file::/usr/bin/curl -qgC - -o %o %u'
           'rsync::/usr/bin/rsync --no-motd -z %u %o'
           'scp::/usr/bin/scp -C %u %o')
 ```
-
 <!-- markdownlint-enable MD013 -->
