@@ -1,0 +1,11 @@
+#!/bin/bash
+
+case $1 in
+"update")
+  yay -Qeq | grep -vxf excluded_packages | tee included_packages
+  ;;
+
+"diff")
+  diff -ud --color=always <(sort included_packages excluded_packages) <(yay -Qeq)
+  ;;
+esac
