@@ -1,7 +1,6 @@
 7zip
 act
 audacity
-base-devel
 blesh-git
 brave-bin
 brightnessctl
@@ -22,7 +21,6 @@ firefox
 firewalld
 fzf
 ghostscript
-git
 git-filter-repo
 git-lfs
 github-cli
@@ -33,7 +31,9 @@ hyprpolkitagent
 hyprshot
 i2c-tools
 imagemagick
+inotify-tools
 intel-media-driver
+intel-undervolt
 intellij-idea-community-edition
 jdk21-openjdk
 jq
@@ -48,6 +48,7 @@ mako
 man-db
 man-pages
 mermaid-cli
+mprime
 neovim
 networkmanager
 networkmanager-dmenu
@@ -55,6 +56,7 @@ nvidia-open-dkms
 nvidia-prime
 nvm
 nwg-look
+openssh
 progress
 qemu-full
 ripgrep
@@ -67,12 +69,14 @@ stow
 swaybg
 tealdeer
 tectonic
+thermald
 tree-sitter-cli
 turbostat
 unzip
 uv
 uwsm
 vim
+visual-studio-code-bin
 vpl-gpu-rt
 vulkan-intel
 waybar
