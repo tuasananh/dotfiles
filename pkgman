@@ -4,7 +4,7 @@ set -e
 
 install_included() {
   echo "Installing included packages"
-  yay --noconfirm -S "$(cat included_packages)"
+  yay --noconfirm -S $(cat included_packages)
 
   if grep -q nvm included_packages; then
     echo "nvm is installed, installing node and pnpm"
