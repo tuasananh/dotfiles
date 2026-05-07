@@ -4,10 +4,11 @@ set -e
 
 install_included() {
   echo "Installing included packages"
-  yay -S "$(cat included_packages)"
+  yay --noconfirm -S "$(cat included_packages)"
 
   if grep -q nvm included_packages; then
     echo "nvm is installed, installing node and pnpm"
+    source /usr/share/nvm/init-nvm.sh
     nvm install stable
     npm install -g corepack
     corepack enable pnpm
