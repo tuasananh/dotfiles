@@ -1,5 +1,60 @@
 #!/bin/bash
 
+set -e
+
+install_included() {
+  echo "Installing included packages"
+  yay -S "$(cat included_packages)"
+
+  if grep -q nvm included_packages; then
+    echo "nvm is installed, installing node and pnpm"
+    nvm install stable
+    npm install -g corepack
+    corepack enable pnpm
+  fi
+}
+
+install_yay() {
+  sudo pacman -S --needed git base-devel
+  git clone https://aur.archlinux.org/yay-bin.git
+  cd yay-bin
+  makepkg --noconfirm -si
+  cd ..
+  rm -rf yay-bin
+}
+
+stow_script() {
+  echo "Pull wallpaper from git lfs"
+  git lfs install
+  git lfs pull
+  echo "Applying user configurations..."
+  for dir in */; do
+    pkg="${dir%/}"
+
+    if [ "$pkg" != "system" ]; then
+      stow -t ~ "$pkg"
+      echo " -> Stowed $pkg"
+    fi
+  done
+
+  echo -e "\nApplying system configurations (sudo required)..."
+  sudo stow -t / system/
+  echo " -> Stowed system configs"
+  echo -e "\nDone!"
+}
+
+post_install() {
+  systemctl enable --user waybar
+  systemctl enable --user hyprpolkitagent
+  systemctl enable now docker
+  sudo groupadd docker
+  sudo usermod -aG docker "$(whoami)"
+  sudo rm /etc/resolv.conf
+  sudo ln -rsf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+  sudo systemctl enable systemd-resolved
+  curl -s https://raw.githubusercontent.com/DanielWeiner/tas2781-fix-16IRX8H/refs/heads/main/install.sh | bash -s --
+}
+
 case $1 in
 "update")
   yay -Qeq | grep -vxf excluded_packages | tee included_packages
@@ -7,5 +62,20 @@ case $1 in
 
 "diff")
   diff -ud --color=always <(sort included_packages excluded_packages) <(yay -Qeq)
+  ;;
+"iyay")
+  install_yay
+  ;;
+"iincl")
+  install_included
+  ;;
+"stow")
+  stow_script
+  ;;
+"posti")
+  post_install
+  ;;
+"limine")
+  sudo cp ./system/boot/limine/limine.conf /boot/limine/limine.conf
   ;;
 esac
