@@ -2,8 +2,9 @@
 
 if [ "$TERM" = "linux" ]; then
   export STARSHIP_CONFIG=~/.config/starship-tty.toml
+else
+  export STARSHIP_CONFIG=~/.config/starship.toml
 fi
-
 eval "$(starship init bash)"
 
 _starship() {
