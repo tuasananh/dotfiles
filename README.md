@@ -1,8 +1,32 @@
 # Legion Pro 7i 16IRX8H Arch Linux Installation
+<!--toc:start-->
+- [Legion Pro 7i 16IRX8H Arch Linux Installation](#legion-pro-7i-16irx8h-arch-linux-installation)
+  - [Prerequisites](#prerequisites)
+    - [Getting an installation medium](#getting-an-installation-medium)
+      - [Getting the ISO](#getting-the-iso)
+      - [Preparing an installation medium](#preparing-an-installation-medium)
+  - [Working with the live environment](#working-with-the-live-environment)
+    - [Boot up the live environment](#boot-up-the-live-environment)
+    - [Get connected to the internet](#get-connected-to-the-internet)
+    - [Running the archinstall script](#running-the-archinstall-script)
+  - [Post-install configuration](#post-install-configuration)
+    - [Connect to the internet](#connect-to-the-internet)
+    - [Clone this repository to get the helper script](#clone-this-repository-to-get-the-helper-script)
+    - [Installing yay and get the essentials](#installing-yay-and-get-the-essentials)
+    - [Install packages and config files](#install-packages-and-config-files)
+    - [Post install configuration](#post-install-configuration-1)
+    - [Configure Limine bootloader](#configure-limine-bootloader)
+    - [Rebuild initramfs](#rebuild-initramfs)
+    - [Begin hyprland](#begin-hyprland)
+    - [Configure git information](#configure-git-information)
+    - [Setup nvim](#setup-nvim)
+    - [Setup theme](#setup-theme)
+  - [That's it, we're done](#thats-it-were-done)
+<!--toc:end-->
 
 ## Prerequisites
 
-$\text{\color{cyan} [IMPORTANT] \color{yellow} You need to have internet an a
+$\text{\color{cyan} [IMPORTANT] \color{yellow} You need to have internet a
 USB drive!}$
 
 ### Getting an installation medium
@@ -122,7 +146,7 @@ standard subvolumes
 - Limine bootloader
 - Profile: Minimal
 - Kernel: linux
-- For applications, enable Bluetooth, pipewire, print service, tuned, and firewalld,
+- For applications, enable Bluetooth, pipewire, print service, and firewalld,
 and all fonts
 - For network, use network manager with iwd backend
 
@@ -147,61 +171,68 @@ nmcli device wifi list
 nmcli device wifi connect <WIFI_NAME>
 ```
 
-### Installing yay and get the essentials
-
-Install `yay`:
+### Clone this repository to get the helper script
 
 ```bash
-sudo pacman -S --needed git base-devel
-git clone https://aur.archlinux.org/yay-bin.git
-cd yay-bin
-makepkg -si
+git clone https://github.com/tuasananh/dotfiles
+cd dotfiles
 ```
+
+### Installing yay and get the essentials
+
+In the `dotfiles` repository folder,
+
+```bash
+./pkgman iyay
+```
+
+After this `yay` is installed.
 
 ### Install packages and config files
 
-Run the following to stow the config files:
+In the `dotfiles` repository folder, inspect the `included_packages` file and remove those that you don't need:
 
 ```bash
-cd ~
-git clone https://github.com/tuasananh/dotfiles
-cd dotfiles
-# Download preset packages
-yay -S $(cat included_packages)
-git lfs install 
-git lfs pull
-rm ~/.bashrc
-stow */
+./pkgman iincl
 ```
 
-### Enable waybar
-
-Since waybar is not currently enabled, we just enable it:
+After that, to stow config files:
 
 ```bash
-systemctl enable --user waybar
+./pkgman stow
+```
+
+### Post install configuration
+
+Run this:
+
+```bash
+./pkgman posti
+```
+
+### Configure Limine bootloader
+
+Run:
+
+```bash
+./pkgman limine
+```
+
+### Rebuild initramfs
+
+```bash
+sudo mkinitcpio -P
 ```
 
 $\text{\color{cyan} [IMPORTANT] \color{yellow} Reboot your computer!}$
 
 ### Begin hyprland
 
-After the reboot, login normally and use `uwsm start hyprland.desktop` to start hyprland, use `WIN + T` to
-open up the terminal.
+After the reboot, login normally and use `uwsm start hyprland.desktop` to start
+hyprland, use `WIN + T` to open up the terminal.
 
 Press `WIN + B` and open up Brave and navigate to `https://github.com/tuasananh/dotfiles`,
 or [this link](https://github.com/tuasananh/dotfiles) for easier copy and paste.
-
-### Installing some dev dependencies
-
-Install `nodejs` with `pnpm`:
-
-```bash
-nvm install stable
-npm install -g corepack
-corepack enable pnpm
-pnpm -v
-```
 
 ### Configure git information
 
@@ -222,164 +253,14 @@ gh auth login
 
 After that, run `nvim` and wait for its installation.
 
-### Configure Limine bootloader
+### Setup theme
 
-Paste this for Catppuccin Mocha theme on top of the `/boot/limine/limine.conf` file:
-
-```conf
-term_palette: 1e1e2e;f38ba8;a6e3a1;f9e2af;89b4fa;f5c2e7;94e2d5;cdd6f4
-term_palette_bright: 585b70;f38ba8;a6e3a1;f9e2af;89b4fa;f5c2e7;94e2d5;cdd6f4
-term_background: 1e1e2e
-term_foreground: cdd6f4
-term_background_bright: 585b70
-term_foreground_bright: cdd6f4
-
-interface_branding:
-```
-
-If dual booting, add Windows inside as well, it is something like:
-
-```conf
-/Windows 11
-    protocol: efi 
-    path: guid(<guid>):/EFI/Microsoft/Boot/bootmgfw.efi
-```
-
-The UUID can be found by using:
+Run:
 
 ```bash
-lsblk -dno PARTUUID /dev/nvmeXXXX
+nwg-look
 ```
 
-where /dev/nvmeXXXX is the partition in which Windows `bootmgfw.efi` file resides.
+Choose Noto Fonts and the first catppuccin theme, prefer dark.
 
-You can list partitions with:
-
-```bash
-lsblk
-```
-
-### Change DNS resolver
-
-I recommend changing the DNS resolver (to access more websites):
-
-```bash
-sudo mkdir -p /etc/systemd/resolved.conf.d
-sudo nvim /etc/systemd/resolved.conf.d/dns_servers.conf
-```
-
-Paste the following into the file:
-<!-- markdownlint-disable MD013 -->
-```conf
-[Resolve]
-# Primary DNS (Cloudflare) - Strict DoT with SNI validation
-DNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111#cloudflare-dns.com 2606:4700:4700::1001#cloudflare-dns.com
-
-# Fallback DNS (Quad9 and Google) - Strict DoT with SNI validation
-FallbackDNS=9.9.9.9#dns.quad9.net 2620:fe::9#dns.quad9.net 8.8.8.8#dns.google 2001:4860:4860::8888#dns.google
-
-# Route all DNS traffic through these servers
-Domains=~.
-
-# We're going with opportunistic here instead of yes because captive portal will break
-DNSOverTLS=opportunistic
-
-# Allow DNSSEC downgrade if routing issues occur (optional but recommended)
-DNSSEC=allow-downgrade
-```
-<!-- markdownlint-enable MD013 -->
-
-Now, configure network manager:
-
-```bash
-sudo nvim /etc/NetworkManager/conf.d/dns.conf
-```
-
-Paste this:
-
-```conf
-[main]
-dns=systemd-resolved
-```
-
-After this, symlink resolv.conf
-
-```bash
-sudo rm /etc/resolv.conf
-sudo ln -rsf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-```
-
-Now, restart the service:
-
-```bash
-sudo systemctl enable --now systemd-resolved.service
-sudo systemctl restart NetworkManager.service
-```
-
-### Fix audio issues
-
-On my machine (Legion Pro 7i 16IRX8H), there is an issue with sound driver whichg
-causes the speaker to die after about 30 seconds of inactivity.
-
-To fix this issue, we will do:
-
-Credit to [this repo](https://github.com/DanielWeiner/tas2781-fix-16IRX8H)
-<!-- markdownlint-disable MD013 -->
-```bash
-curl -s https://raw.githubusercontent.com/DanielWeiner/tas2781-fix-16IRX8H/refs/heads/main/install.sh | bash -s --
-```
-<!-- markdownlint-enable MD013 -->
-This will disable the power saving feature which turn the speaker off for some
-reason and fail to turn it back on
-
-### Authentication agent
-
-Next, enable the authentication agent:
-
-```bash
-systemctl enable --user hyprpolkitagent
-```
-
-### Docker
-
-Enable docker:
-
-```bash
-systemctl enable --now docker
-sudo groupadd docker
-sudo usermod -aG docker $(whoami)
-```
-
-Reboot your computer for the changes to take effect.
-
-### Unblock bluetooth
-
-By default, bluetooth may be blocked, run:
-
-```bash
-rfkill unblock bluetooth
-```
-
-to unblock it.
-
-### Use aria2c instead of curl for makepkg (optional)
-
-```bash
-sudo pacman -S aria2
-```
-
-```bash
-sudo nvim /etc/makepkg.conf 
-```
-
-For `DLAGENTS`, use `aria2c`:
-<!-- markdownlint-disable MD013 -->
-```conf
-DLAGENTS=('file::/usr/bin/curl -qgC - -o %o %u'
-          'ftp::/usr/bin/curl -qgfC - --ftp-pasv --retry 3 --retry-delay 3 -o %o %u'
-          'http::/usr/bin/aria2c -s 16 -x 16 -k 1M --stream-piece-selector=random --min-split-size=1M %u -o %o'
-          'https::/usr/bin/aria2c -s 16 -x 16 -k 1M --stream-piece-selector=random --min-split-size=1M %u -o %o'
-          'rsync::/usr/bin/rsync --no-motd -z %u %o'
-          'scp::/usr/bin/scp -C %u %o')
-```
-<!-- markdownlint-enable MD013 -->
+## That's it, we're done
