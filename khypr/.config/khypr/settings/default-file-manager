@@ -1,2 +1,2 @@
-yazi
+bash -ic "y; exec bash"
 needs terminal
