@@ -551,7 +551,7 @@ bleopt editor=nvim
 ## specifies that the keymap should be automatically selected from "emacs" or
 ## "vi" according to the current readline state "set -o emacs" or "set -o vi".
 
-#bleopt default_keymap=auto
+bleopt default_keymap=vi
 
 
 ## The following setting controls the treatment of isolated ESCs.  The value
@@ -1289,12 +1289,12 @@ function blerc/vim-load-hook {
 
   ## Cursor settings
 
-  #ble-bind -m vi_nmap --cursor 2
-  #ble-bind -m vi_imap --cursor 5
-  #ble-bind -m vi_omap --cursor 4
-  #ble-bind -m vi_xmap --cursor 2
-  #ble-bind -m vi_smap --cursor 2
-  #ble-bind -m vi_cmap --cursor 0
+  ble-bind -m vi_nmap --cursor 2
+  ble-bind -m vi_imap --cursor 5
+  ble-bind -m vi_omap --cursor 4
+  ble-bind -m vi_xmap --cursor 2
+  ble-bind -m vi_smap --cursor 2
+  ble-bind -m vi_cmap --cursor 0
 
   ## DECSCUSR setting
   ##
