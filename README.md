@@ -174,7 +174,8 @@ nmcli device wifi connect <WIFI_NAME>
 ### Clone this repository to get the helper script
 
 ```bash
-git clone https://github.com/tuasananh/dotfiles
+sudo pacman -S git
+git clone https://github.com/tuasananh/dotfiles --depth=1
 cd dotfiles
 ```
 
@@ -190,7 +191,8 @@ After this `yay` is installed.
 
 ### Install packages and config files
 
-In the `dotfiles` repository folder, inspect the `included_packages` file and remove those that you don't need:
+In the `dotfiles` repository folder, inspect the `included_packages` file and
+remove those that you don't need:
 
 ```bash
 ./pkgman iincl
