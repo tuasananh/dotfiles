@@ -26,7 +26,7 @@
 
 ## Prerequisites
 
-$\text{\color{cyan} [IMPORTANT] \color{yellow} You need to have internet a
+$\text{\color{cyan} [IMPORTANT] \color{yellow} You need to have internet and a
 USB drive!}$
 
 ### Getting an installation medium
