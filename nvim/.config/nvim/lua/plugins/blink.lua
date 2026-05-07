@@ -1,13 +1,8 @@
 return {
   "saghen/blink.cmp",
-  opts = {
-    keymap = {
-      preset = "default",
-      -- Disable Enter (<CR>) from accepting suggestions
-      ["<CR>"] = { "fallback" },
-      -- Optional: Ensure Tab or other keys work as you expect
-      -- ["<Tab>"] = { "fallback" },
-      -- ["<S-Tab>"] = { "select_prev", "fallback" },
-    },
-  },
+  opts = function(_, opts)
+    opts.keymap = {}
+    opts.keymap.preset = "super-tab"
+    opts.keymap["<C-y>"] = { "select_and_accept" }
+  end,
 }
