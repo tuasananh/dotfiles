@@ -4,6 +4,7 @@ set -e
 
 install_included() {
   echo "Installing included packages"
+  # shellcheck disable=SC2046
   yay --noconfirm -S $(cat included_packages)
 
   if grep -q nvm included_packages; then
@@ -41,6 +42,9 @@ stow_script() {
   echo -e "\nApplying system configurations (sudo required)..."
   sudo stow -t / system/
   echo " -> Stowed system configs"
+  echo "Copying system configs"
+  sudo cp ./system/boot/limine/limine.conf /boot/limine/limine.conf
+  sudo cp ./system/etc/udev/rules.d/80-nvidia-pm.rules /etc/udev/rules.d/80-nvidia-pm.rules
   echo -e "\nDone!"
 }
 
@@ -77,6 +81,5 @@ case $1 in
   post_install
   ;;
 "limine")
-  sudo cp ./system/boot/limine/limine.conf /boot/limine/limine.conf
   ;;
 esac

@@ -1,1 +1,2 @@
-^boot
+^/boot$
+^/etc/udev/rules\.d$
