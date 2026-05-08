@@ -1,0 +1,13 @@
+CompileFlags:
+  Add:
+    - "-std=c++23"
+    - "-DLOCAL"
+    - "-O2"
+    - "-g3"
+    - "-Wall"
+    - "-Wextra"
+    - "-Wshadow"
+    - "-Wconversion"
+    - "-D_GLIBCXX_DEBUG"
+    - "-D_GLIBCXX_DEBUG_PEDANTIC"
+    - "-I/home/tuasananh/repos/CP/"
