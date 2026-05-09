@@ -7,7 +7,6 @@ CompileFlags:
     - "-Wall"
     - "-Wextra"
     - "-Wshadow"
-    - "-Wconversion"
     - "-D_GLIBCXX_DEBUG"
     - "-D_GLIBCXX_DEBUG_PEDANTIC"
     - "-I/home/tuasananh/repos/CP/"
