@@ -28,7 +28,7 @@
     }
   },
   "custom/backlight": {
-    "exec": "~/.config/shared/scripts/get_brightness.sh",
+    "exec": "~/.config/khypr/scripts/get_brightness.sh",
     "return-type": "json",
     // "interval":
     "format": "{icon} {percentage}%",
@@ -51,8 +51,8 @@
     // "on-click-middle":
     // "on-click-right":
     // "on-update":
-    "on-scroll-up": "~/.config/shared/scripts/brightness.sh up",
-    "on-scroll-down": "~/.config/shared/scripts/brightness.sh down",
+    "on-scroll-up": "~/.config/khypr/scripts/brightness.sh up",
+    "on-scroll-down": "~/.config/khypr/scripts/brightness.sh down",
     // "smooth-scrolling-threshold":
     "reverse-scrolling": true,
     // "reverse-mouse-scrolling":
@@ -97,12 +97,12 @@
     // "align":
     // "justify":
     // "scroll-step":
-    "on-click": "~/.config/shared/scripts/volume.sh output mute",
+    "on-click": "~/.config/khypr/scripts/volume.sh output mute",
     // "on-click-middle":
     // "on-click-right":
     // "on-update":
-    "on-scroll-up": "~/.config/shared/scripts/volume.sh output up",
-    "on-scroll-down": "~/.config/shared/scripts/volume.sh output down",
+    "on-scroll-up": "~/.config/khypr/scripts/volume.sh output up",
+    "on-scroll-down": "~/.config/khypr/scripts/volume.sh output down",
     // "smooth-scrolling-threshold":
     // "tooltip":
     "tooltip-format": "<b>Output Device</b>: {desc}",
@@ -132,12 +132,12 @@
     // "align":
     // "justify":
     // "scroll-step":
-    "on-click": "~/.config/shared/scripts/volume.sh input mute",
+    "on-click": "~/.config/khypr/scripts/volume.sh input mute",
     // "on-click-middle":
     // "on-click-right":
     // "on-update":
-    "on-scroll-up": "~/.config/shared/scripts/volume.sh input up",
-    "on-scroll-down": "~/.config/shared/scripts/volume.sh input down",
+    "on-scroll-up": "~/.config/khypr/scripts/volume.sh input up",
+    "on-scroll-down": "~/.config/khypr/scripts/volume.sh input down",
     // "smooth-scrolling-threshold":
     // "tooltip":
     "tooltip-format": "<b>Input Device</b>: {desc}",
