@@ -8,27 +8,27 @@ STEP="${AMOUNT}%"
 
 # Determine the ID based on the target
 if [ "$TARGET" == "output" ]; then
-    ID="@DEFAULT_AUDIO_SINK@"
+  ID="@DEFAULT_AUDIO_SINK@"
 elif [ "$TARGET" == "input" ]; then
-    ID="@DEFAULT_AUDIO_SOURCE@"
+  ID="@DEFAULT_AUDIO_SOURCE@"
 else
-    echo "Usage: $0 {output|input} {up|down|mute}"
-    exit 1
+  echo "Usage: $0 {output|input} {up|down|mute}"
+  exit 1
 fi
 
 case "$ACTION" in
-    up)
-        # Increases volume, capped at 100%
-        wpctl set-volume -l 1.0 "$ID" "$STEP+"
-        ;;
-    down)
-        wpctl set-volume "$ID" "$STEP-"
-        ;;
-    mute)
-        wpctl set-mute "$ID" toggle
-        ;;
-    *)
-        echo "Usage: $0 {output|input} {up|down|mute}"
-        exit 1
-        ;;
+up)
+  # Increases volume, capped at 100%
+  wpctl set-volume "$ID" "$STEP+"
+  ;;
+down)
+  wpctl set-volume "$ID" "$STEP-"
+  ;;
+mute)
+  wpctl set-mute "$ID" toggle
+  ;;
+*)
+  echo "Usage: $0 {output|input} {up|down|mute}"
+  exit 1
+  ;;
 esac
