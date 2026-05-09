@@ -5,5 +5,6 @@
 vim.opt.clipboard = ""
 vim.opt.cinoptions:append("L0")
 vim.opt.indentkeys:remove(":")
+vim.opt.wrap = true
 vim.g.ai_cmp = false
 vim.g.omni_sql_no_default_maps = true
