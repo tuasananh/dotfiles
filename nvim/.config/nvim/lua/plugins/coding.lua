@@ -14,4 +14,14 @@ return {
       require("luasnip.loaders.from_snipmate").lazy_load({ paths = { "./snippets" } })
     end,
   },
+  {
+    "stevearc/conform.nvim",
+    opts = {
+      formatters = {
+        prettier = {
+          prepend_args = { "--trailing-comma", "none" },
+        },
+      },
+    },
+  },
 }
