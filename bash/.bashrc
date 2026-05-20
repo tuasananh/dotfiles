@@ -4,6 +4,10 @@ export EDITOR=nvim
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
+if uwsm check may-start; then
+  uwsm start hyprland.desktop
+fi
+
 # shellcheck disable=SC1094
 [[ $- == *i* ]] && source -- /usr/share/blesh/ble.sh --attach=none
 
