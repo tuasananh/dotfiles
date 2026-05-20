@@ -30,40 +30,12 @@
   "custom/backlight": {
     "exec": "~/.config/khypr/scripts/get_brightness.sh",
     "return-type": "json",
-    // "interval":
-    "format": "{icon} {percentage}%",
-    "format-icons": [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    // "align":
-    // "justify":
-    // "rotate":
-    // "states":
-    // "on-click":
-    // "on-click-middle":
-    // "on-click-right":
-    // "on-update":
+    "format": "<span size='large' rise='-512' letter_spacing='12288'>{icon}</span>{percentage}%",
+    "format-icons": ["", "", "", "", "", "", "", "", ""],
     "on-scroll-up": "~/.config/khypr/scripts/brightness.sh up",
     "on-scroll-down": "~/.config/khypr/scripts/brightness.sh down",
-    // "smooth-scrolling-threshold":
     "reverse-scrolling": true,
-    // "reverse-mouse-scrolling":
-    // "scroll-step":
-    // "min-brightness":
-    // "tooltip":
     "tooltip-format": "Screen Brightness"
-    // "menu":
-    // "menu-file":
-    // "menu-actions":
-    // "expand":
   },
   /*-------------------
 	    Output device
@@ -73,17 +45,13 @@
     "cursor": true
   },
   "pulseaudio#output": {
-    "format": "{icon}{volume}%",
+    "format": "<span letter_spacing='2048'>{icon}</span>{volume}%",
     // "format-bluetooth":
-    "format-muted": "{icon} {volume}%",
+    "format-muted": "<span letter_spacing='2048'>{icon}</span>{volume}%",
     // "format-source":
     // "format-source-muted":
     "format-icons": {
-      "default": [
-        " ",
-        " ",
-        " "
-      ],
+      "default": [" ", " ", " "],
       "default-muted": " ",
       "headphone": "󰋋 ",
       "headphone-muted": "󰟎 ",
@@ -120,53 +88,24 @@
 	----------------*/
   "pulseaudio#input": {
     "format": "{format_source}",
-    // "format-bluetooth":
-    // "format-muted":
     "format-source": " {volume}%",
     "format-source-muted": " {volume}%",
-    // "format-icons":
-    // "rotate":
-    // "states":
-    // "min-length": 7,
-    // "max-length": 7,
-    // "align":
-    // "justify":
-    // "scroll-step":
     "on-click": "~/.config/khypr/scripts/volume.sh input mute",
-    // "on-click-middle":
-    // "on-click-right":
-    // "on-update":
     "on-scroll-up": "~/.config/khypr/scripts/volume.sh input up",
     "on-scroll-down": "~/.config/khypr/scripts/volume.sh input down",
-    // "smooth-scrolling-threshold":
-    // "tooltip":
     "tooltip-format": "<b>Input Device</b>: {desc}",
-    // "max-volume":
-    // "ignored-sinks":
     "reverse-scrolling": true
-    // "reverse-mouse-scrolling":
-    // "menu":
-    // "menu-file":
-    // "menu-actions":
-    // "expand":
   },
   "network": {
-    "format-wifi": "{icon} {essid} ({signalStrength}%)",
-    "format-icons": [
-      "󰤯",
-      "󰤟",
-      "󰤢",
-      "󰤥",
-      "󰤨"
-    ],
+    "format-wifi": "<span letter_spacing='2048'>{icon}</span>{essid}",
+    "format-icons": ["󰤯 ", "󰤟 ", "󰤢 ", "󰤥 ", "󰤨 "],
     "format-ethernet": "󰊗 {ipaddr}/{cidr}",
     "format-disconnected": "⚠ Disconnected",
     "tooltip-format": "{ifname} via {gwaddr}",
     "on-click": "~/.config/khypr/launchers/launch-network-manager.sh"
   },
   "bluetooth": {
-    // "controller": "controller1", // specify the alias of the controller if there are more than 1 on the system
-    "format": " {status}",
+    "format": "<span letter_spacing='8192'></span>{status}",
     "format-disabled": "", // an empty format will hide the module
     "format-connected": " {num_connections}",
     "tooltip-format": "{controller_alias}\t{controller_address}",
@@ -179,21 +118,9 @@
       "warning": 30,
       "critical": 15
     },
-    "format": "{icon} {capacity}%",
+    "format": "<span letter_spacing='8192'>{icon}</span>{capacity}%",
     "format-icons": {
-      "default": [
-        "󰂎",
-        "󰁺",
-        "󰁻",
-        "󰁼",
-        "󰁽",
-        "󰁾",
-        "󰁿",
-        "󰂀",
-        "󰂁",
-        "󰂂",
-        "󰁹"
-      ],
+      "default": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
       "charging": [
         "󰢟 ",
         "󰢜 ",
@@ -210,20 +137,18 @@
     }
   },
   "clock": {
-    "format": " {:%H:%M}",
-    "format-alt": " {:%A, %B %d, %Y (%R)}",
+    "format": "<span rise='512'> </span><span rise='-512'>{:%Y/%m/%d %H:%M}</span>",
     "tooltip-format": "<tt><big>{calendar}</big></tt>",
     "calendar": {
       "mode": "year",
       "mode-mon-col": 3,
-      // "weeks-pos"     : "right",
       "on-scroll": 1,
       "format": {
-        "months": "<span color='#ffead3'><b>{}</b></span>",
-        "days": "<span color='#ecc6d9'><b>{}</b></span>",
-        // "weeks":      "<span color='#99ffdd'><b>W{}</b></span>",
-        "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
-        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+        "months": "<span color='#fab387'><b>{}</b></span>", // peach
+        "days": "<span color='#cdd6f4'><b>{}</b></span>", // text
+        "weeks": "<span color='#94e2d5'><b>W{}</b></span>", // teal
+        "weekdays": "<span color='#f9e2af'><b>{}</b></span>", // yellow
+        "today": "<span color='#f38ba8'><b><u>{}</u></b></span>" // red (makes today pop)
       }
     },
     "actions": {
