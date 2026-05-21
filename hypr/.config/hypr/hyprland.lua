@@ -6,7 +6,7 @@ local colors = {
 
 hl.monitor({
 	output = "",
-	mode = "preferred",
+	mode = "2560x1600@240",
 	position = "auto",
 	scale = "1",
 })
@@ -133,6 +133,8 @@ hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("uwsm app -- " .. browser))
 hl.bind(mainMod .. " + F", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd('pkill -fx "' .. menu .. '" || ' .. menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
+hl.bind(mainMod .. " + M", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))
+hl.bind(mainMod .. " + SHIFT + M", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
 hl.bind(mainMod .. " + G", hl.dsp.layout("togglesplit"))
 hl.bind(
 	mainMod .. " + V",

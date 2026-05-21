@@ -16,11 +16,9 @@ POSITION="auto"
 SCALE="1"
 
 if hyprctl monitors | grep "$MONITOR" -A 1 | tail -n 1 | grep -q "@240"; then
-  # Currently at 240Hz -> Switch to 60Hz
-  hyprctl keyword monitor "$MONITOR,$RESOLUTION@60,$POSITION,$SCALE"
+  hyprctl eval "hl.monitor({ output = \"$MONITOR\", mode = \"$RESOLUTION@60\", position = \"$POSITION\", scale = \"$SCALE\", })"
   notify-send -t 5000 "Display" "Switched to 60Hz"
 else
-  # Currently at 60Hz -> Switch to 240Hz
-  hyprctl keyword monitor "$MONITOR,$RESOLUTION@240,$POSITION,$SCALE"
+  hyprctl eval "hl.monitor({ output = \"$MONITOR\", mode = \"$RESOLUTION@240\", position = \"$POSITION\", scale = \"$SCALE\", })"
   notify-send -t 5000 "Display" "Switched to 240Hz"
 fi
