@@ -4,7 +4,7 @@
     "tooltip": true,
     "tooltip-format": "btw"
   },
-  "hyprland/workspaces": {
+  "ext/workspaces": {
     "format": "{name}",
     "format-icons": {
       "urgent": "",
@@ -97,7 +97,7 @@
     "reverse-scrolling": true
   },
   "network": {
-    "format-wifi": "<span letter_spacing='2048'>{icon}</span>{essid}",
+    "format-wifi": "<span letter_spacing='1024'>{icon}</span>{essid}",
     "format-icons": ["󰤯 ", "󰤟 ", "󰤢 ", "󰤥 ", "󰤨 "],
     "format-ethernet": "󰊗 {ipaddr}/{cidr}",
     "format-disconnected": "⚠ Disconnected",

@@ -18,7 +18,7 @@ cp_cc() {
   echo -e "${CYAN}Compiling $filename...${NC}"
 
   # Run g++ directly inside the if condition
-  if g++ -std=c++23 -DLOCAL -O2 -g3 -Wall -Wextra -Wshadow -Wconversion \
+  if g++ -std=c++23 -DLOCAL -O2 -g -Wall -Wextra -Wshadow -Wconversion \
     -Wlogical-op -Wfloat-equal -Wduplicated-cond \
     -fsanitize=address,undefined -fno-sanitize-recover=all \
     -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -I/home/tuasananh/repos/CP/ \
