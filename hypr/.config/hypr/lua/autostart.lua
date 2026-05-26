@@ -1,0 +1,6 @@
+hl.on("hyprland.start", function()
+	hl.dispatch(hl.dsp.exec_cmd("uwsm app -- fcitx5"))
+	hl.dispatch(hl.dsp.exec_cmd("uwsm app -- swaybg -m fill -i ~/.config/hypr/wall.png"))
+	hl.dispatch(hl.dsp.exec_cmd("uwsm app -- wl-paste --type text --watch cliphist store"))
+	hl.dispatch(hl.dsp.exec_cmd("uwsm app -- wl-paste --type image --watch cliphist store"))
+end)
