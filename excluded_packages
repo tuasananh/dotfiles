@@ -1,4 +1,3 @@
-auto-cpufreq
 base
 base-devel
 bluez
@@ -29,7 +28,6 @@ system-config-printer
 ttf-dejavu
 ttf-liberation
 wireplumber
-xdg-desktop-portal
 yay-bin
 yay-bin-debug
 zram-generator
