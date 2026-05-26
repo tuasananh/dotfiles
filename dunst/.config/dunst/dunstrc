@@ -1,0 +1,59 @@
+[global]
+### Position & Geometry (Matches Mako) ###
+origin = bottom-right
+offset = (20, 20)
+width = 400
+notification_limit = 0
+
+### Shapes & Borders (Matches Mako) ###
+corner_radius = 15
+frame_width = 2
+gap_size = 0
+### Colors & Typography (Catppuccin Mocha) ###
+frame_color = "#89b4fa"       # Catppuccin Blue
+separator_color = frame
+font = Monospace 14
+# Clean, flat progress bar styling matching Mako's progress token
+progress_bar = true
+progress_bar_height = 6
+progress_bar_frame_width = 0
+highlight = "#313244"
+
+### Padding & Spacing ###
+padding = 4
+horizontal_padding = 4
+
+### Icons & Actions (Matches Mako) ###
+icon_theme = breeze-dark
+enable_recursive_icon_lookup = true
+icon_position = left
+max_icon_size = 48
+dmenu = /usr/bin/rofi -dmenu -p "Notification Actions:"
+browser = /usr/bin/xdg-open
+
+### History (Matches Mako max-history) ###
+history_length = 100
+
+[urgency_low]
+background = "#1e1e2e"
+foreground = "#cdd6f4"
+timeout = 5
+
+[urgency_normal]
+background = "#1e1e2e"
+foreground = "#cdd6f4"
+timeout = 10
+
+[urgency_critical]
+background = "#1e1e2e"
+foreground = "#cdd6f4"
+frame_color = "#fab387"       # Matches Mako's high urgency border (Mocha Peach)
+timeout = 0
+
+[actionable_notifications]
+# Filter: Match any notification sent with appname "action-needed"
+appname = "action-needed"
+# Modifier: Override the icon completely with a specific Breeze-Dark icon
+new_icon = "dialog-question"
+# Optional styling tweaks to make action notifications stand out:
+frame_color = "#b4befe"  # Soft Lavender color to distinguish it
