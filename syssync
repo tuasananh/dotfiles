@@ -110,7 +110,16 @@ def get_file_status(rel_path, state):
     src_hash = get_sha256(src_path)
     tgt_hash = get_sha256(tgt_path)
 
-    last_hash = state.get(rel_path)
+    src_mode = os.stat(src_path).st_mode & 0o777 if os.path.exists(src_path) else None
+    tgt_mode = os.stat(tgt_path).st_mode & 0o777 if os.path.exists(tgt_path) else None
+
+    state_entry = state.get(rel_path)
+    if isinstance(state_entry, dict):
+        last_hash = state_entry.get("hash")
+        last_mode = state_entry.get("mode")
+    else:
+        last_hash = state_entry
+        last_mode = None
 
     if not os.path.exists(src_path):
         if tgt_hash is not None:
@@ -120,19 +129,35 @@ def get_file_status(rel_path, state):
     if tgt_hash is None:
         return "NEW_FILE", src_hash, tgt_hash, last_hash
 
-    if src_hash == tgt_hash:
+    if src_hash == tgt_hash and src_mode == tgt_mode:
         return "IN_SYNC", src_hash, tgt_hash, last_hash
 
     if last_hash is None:
-        # No history, but files differ
+        # No history, but files differ (in hash or mode)
         return "DIFFERS_NO_STATE", src_hash, tgt_hash, last_hash
 
-    if src_hash != last_hash and tgt_hash == last_hash:
-        # Only local (source) has changed
+    # Check if local changed
+    local_changed = False
+    if src_hash != last_hash:
+        local_changed = True
+    if last_mode is not None and src_mode != last_mode:
+        local_changed = True
+
+    # Check if target changed
+    target_changed = False
+    if tgt_hash != last_hash:
+        target_changed = True
+    if last_mode is not None and tgt_mode != last_mode:
+        target_changed = True
+
+    # If neither reported a change but they differ:
+    if not local_changed and not target_changed:
+        return "DIFFERS_NO_STATE", src_hash, tgt_hash, last_hash
+
+    if local_changed and not target_changed:
         return "OUT_OF_SYNC_LOCAL", src_hash, tgt_hash, last_hash
 
-    if tgt_hash != last_hash and src_hash == last_hash:
-        # Only system (target) has changed
+    if target_changed and not local_changed:
         return "OUT_OF_SYNC_EXTERNAL", src_hash, tgt_hash, last_hash
 
     # Both have changed and differ from last sync
@@ -217,7 +242,13 @@ def do_push(rel_path, state, force=False):
         return True, "Already in sync"
 
     if status in ("OUT_OF_SYNC_EXTERNAL", "CONFLICT", "DIFFERS_NO_STATE") and not force:
-        return False, f"Refused to overwrite external system modification ({status})"
+        if src_hash == tgt_hash:
+            pass
+        else:
+            return (
+                False,
+                f"Refused to overwrite external system modification ({status})",
+            )
 
     # Proceed with Sync
     # 1. Ensure target directory exists
@@ -260,15 +291,18 @@ def do_push(rel_path, state, force=False):
         # 5. Enforce root ownership and correct permissions
         shutil.chown(tgt_path, user="root", group="root")
 
-        # Preserving original permissions if the target existed, otherwise default to 0o644
-        if existing_mode is not None:
-            os.chmod(tgt_path, existing_mode)
-        else:
-            os.chmod(tgt_path, 0o644)
+        # Sync permissions to match the source file permissions
+        src_mode = (
+            os.stat(src_path).st_mode & 0o777 if os.path.exists(src_path) else 0o644
+        )
+        os.chmod(tgt_path, src_mode)
 
         # Update State
         new_hash = get_sha256(tgt_path)
-        state[rel_path] = new_hash
+        tgt_mode = (
+            os.stat(tgt_path).st_mode & 0o777 if os.path.exists(tgt_path) else None
+        )
+        state[rel_path] = {"hash": new_hash, "mode": tgt_mode}
         return True, "Synced successfully"
 
     except PermissionError:
@@ -287,7 +321,10 @@ def do_pull(rel_path, state, force=False):
         return True, "Already in sync"
 
     if status in ("OUT_OF_SYNC_LOCAL", "CONFLICT") and not force:
-        return False, f"Refused to overwrite local dotfile modification ({status})"
+        if src_hash == tgt_hash:
+            pass
+        else:
+            return False, f"Refused to overwrite local dotfile modification ({status})"
 
     if tgt_hash is None:
         return False, "System file does not exist to pull from"
@@ -305,7 +342,10 @@ def do_pull(rel_path, state, force=False):
         except Exception:
             pass
 
-        state[rel_path] = tgt_hash
+        tgt_mode = (
+            os.stat(tgt_path).st_mode & 0o777 if os.path.exists(tgt_path) else None
+        )
+        state[rel_path] = {"hash": tgt_hash, "mode": tgt_mode}
         return True, "Pulled successfully"
     except Exception as e:
         return False, str(e)
@@ -347,8 +387,10 @@ def cmd_status(args):
         status, _, _, _ = get_file_status(f, state)
         label = status_labels.get(status, status)
         file_statuses.append((f, status, label))
-        
-    max_label_len = max(len(label) for _, _, label in file_statuses) if file_statuses else 0
+
+    max_label_len = (
+        max(len(label) for _, _, label in file_statuses) if file_statuses else 0
+    )
 
     for f, status, label in file_statuses:
         color = status_colors.get(status, C_RESET)
@@ -391,10 +433,23 @@ def cmd_diff(args):
         )
 
         diff_list = list(diff)
-        if diff_list:
+        src_mode = (
+            os.stat(src_path).st_mode & 0o777 if os.path.exists(src_path) else None
+        )
+        tgt_mode = (
+            os.stat(tgt_path).st_mode & 0o777 if os.path.exists(tgt_path) else None
+        )
+
+        if diff_list or (src_mode != tgt_mode):
             diff_count += 1
             print(f"\n{C_BOLD}{C_BLUE}Diff for {f}:{C_RESET}")
             print(f"{C_GRAY}{'=' * 60}{C_RESET}")
+            if src_mode != tgt_mode:
+                src_oct = oct(src_mode)[2:] if src_mode is not None else "None"
+                tgt_oct = oct(tgt_mode)[2:] if tgt_mode is not None else "None"
+                print(
+                    f"{C_YELLOW}Permissions differ: Target ({tgt_oct}) != Source ({src_oct}){C_RESET}"
+                )
             for line in diff_list:
                 if line.startswith("+"):
                     print(f"{C_GREEN}{line}{C_RESET}")
@@ -478,178 +533,6 @@ def cmd_pull(args):
         print_info("Nothing to pull. Dotfiles already up to date.")
 
 
-def cmd_watch(args):
-    if os.geteuid() != 0:
-        print_err(
-            "Watching and syncing system configs requires root privileges. Please run with sudo."
-        )
-        sys.exit(1)
-
-    if not shutil.which("inotifywait"):
-        print_err(
-            "inotifywait is not installed. Please install 'inotify-tools' package first."
-        )
-        sys.exit(1)
-
-    print_info(f"Starting file watcher on {SOURCE_DIR}...")
-    print_info("Press Ctrl+C to stop.")
-
-    # Pre-sync check
-    state = load_state()
-
-    # Run inotifywait in a subprocess
-    # Options: -m (monitor), -r (recursive), -e (events), format
-    cmd = [
-        "inotifywait",
-        "-m",
-        "-r",
-        "-e",
-        "modify,create,delete,moved_to,moved_from",
-        "--format",
-        "%w%f %e",
-        SOURCE_DIR,
-    ]
-
-    proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True
-    )
-
-    # Debouncing variables
-    pending_syncs = set()
-    last_event_time = 0
-    debounce_delay = 0.5  # seconds
-
-    try:
-        while True:
-            # Check if process terminated
-            if proc.poll() is not None:
-                print_err("inotifywait exited unexpectedly.")
-                break
-
-            # Non-blocking or timed read to allow debouncing to execute
-            # We will use select or a simple timed sleep/readline loop
-            import select
-
-            ready, _, _ = select.select([proc.stdout], [], [], 0.1)
-
-            current_time = time.time()
-
-            if ready:
-                line = proc.stdout.readline()
-                if not line:
-                    break
-                parts = line.strip().split(" ")
-                if len(parts) >= 2:
-                    filepath = parts[0]
-                    event = parts[1]
-
-                    # Convert absolute path back to relative
-                    if filepath.startswith(SOURCE_DIR):
-                        rel_path = os.path.relpath(filepath, SOURCE_DIR)
-
-                        # Filter out temp/editor swap files and ignores
-                        # Skip vim/nano/nvim temp files
-                        if any(
-                            x in rel_path
-                            for x in (".stow-local-ignore", ".git", ".swp", "~", "4913")
-                        ):
-                            continue
-
-                        # If a directory is in parts, rel_path might point to directory
-                        if os.path.isdir(os.path.join(SOURCE_DIR, rel_path)):
-                            continue
-
-                        pending_syncs.add(rel_path)
-                        last_event_time = current_time
-
-            # Execute debounced syncs
-            if pending_syncs and (current_time - last_event_time) >= debounce_delay:
-                # Run sync
-                state = load_state()
-                synced_files = list(pending_syncs)
-                pending_syncs.clear()
-
-                successes = []
-                failures = []
-
-                for f in synced_files:
-                    # Double check if file exists, if deleted we might warn
-                    src_exists = os.path.exists(os.path.join(SOURCE_DIR, f))
-                    if not src_exists:
-                        # Deletion is ignored for safety, or we could handle it
-                        continue
-
-                    ok, msg = do_push(f, state, force=False)
-                    if ok:
-                        if "successfully" in msg:
-                            successes.append(f)
-                            print_success(f"[Daemon] Synced {f} successfully.")
-                    else:
-                        failures.append((f, msg))
-                        print_err(f"[Daemon] Failed to sync {f}: {msg}")
-
-                save_state(state)
-
-                # Notifications
-                if successes:
-                    title = "🔄 System Config Synced"
-                    msg = "\n".join(successes)
-                    if len(successes) > 3:
-                        msg = f"{len(successes)} configuration files updated."
-                    notify_user(title, msg, is_error=False)
-
-                if failures:
-                    title = "⚠️ System Sync Conflict"
-                    msg = "\n".join([f"{f}: {reason}" for f, reason in failures])
-                    if len(failures) > 3:
-                        msg = f"{len(failures)} files failed to sync."
-                    notify_user(title, msg, is_error=True)
-
-            time.sleep(0.01)
-
-    except KeyboardInterrupt:
-        print("\nStopping file watcher.")
-    finally:
-        proc.terminate()
-        proc.wait()
-
-
-def cmd_install(args):
-    if os.geteuid() != 0:
-        print_err(
-            "Installing the systemd service requires root privileges. Please run with sudo."
-        )
-        sys.exit(1)
-
-    service_content = f"""[Unit]
-Description=SysSync Dotfiles System Config Watcher
-After=network.target
-
-[Service]
-Type=simple
-ExecStart={os.path.abspath(__file__)} watch
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-"""
-
-    dest_path = "/etc/systemd/system/syssync.service"
-    try:
-        with open(dest_path, "w") as f:
-            f.write(service_content)
-        print_success(f"Systemd service file created at {dest_path}")
-
-        # Reload systemd
-        subprocess.run(["systemctl", "daemon-reload"], check=True)
-        # Enable and start the service
-        subprocess.run(["systemctl", "enable", "--now", "syssync.service"], check=True)
-        print_success("syssync.service is now enabled and running in the background!")
-    except Exception as e:
-        print_err(f"Failed to install systemd service: {e}")
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="syssync: A safe, robust sync utility for system dotfiles (etc/ and boot/)"
@@ -711,8 +594,6 @@ def main():
         "diff": cmd_diff,
         "push": cmd_push,
         "pull": cmd_pull,
-        "watch": cmd_watch,
-        "install-service": cmd_install,
     }
 
     commands[args.command](args)

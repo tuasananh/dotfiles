@@ -48,7 +48,7 @@ install_included() {
     print_err "'included_packages' file not found in current directory."
     exit 1
   fi
-  
+
   print_info "Installing included packages..."
   # shellcheck disable=SC2046
   yay --noconfirm -S $(cat included_packages)
@@ -71,10 +71,10 @@ install_included() {
 install_yay() {
   print_info "Installing yay AUR helper..."
   sudo pacman -S --noconfirm --needed git base-devel
-  
+
   # Safe cleanup before cloning
   rm -rf yay-bin
-  
+
   git clone https://aur.archlinux.org/yay-bin.git
   cd yay-bin
   makepkg --noconfirm -si
@@ -87,7 +87,7 @@ stow_script() {
   print_info "Pulling assets from Git LFS..."
   git lfs install
   git lfs pull
-  
+
   print_info "Applying user configurations via GNU Stow..."
   for dir in */; do
     pkg="${dir%/}"
@@ -108,7 +108,7 @@ stow_script() {
 
   echo -e "\n${C_BOLD}${C_BLUE}Installing and enabling syssync background watcher daemon...${C_RESET}"
   sudo ./syssync install-service
-  
+
   print_success "All configurations applied successfully!"
 }
 
@@ -116,23 +116,28 @@ post_install() {
   print_info "Configuring and enabling user-level systemd services..."
   systemctl enable --user --now waybar
   systemctl enable --user --now hyprpolkitagent
-  
+  systemctl enable --user --now hyprdynamicmonitors
+  systemctl enable --user --now hyprdynamicmonitors-prepare
+
   print_info "Configuring Docker container service..."
   # -f avoids error if the group already exists
   sudo groupadd -f docker
   sudo usermod -aG docker "$(whoami)"
   sudo systemctl enable --now docker
-  
+
   print_info "Configuring Systemd DNS Stub Resolver..."
   if [ -f /etc/resolv.conf ] || [ -L /etc/resolv.conf ]; then
     sudo rm -f /etc/resolv.conf
   fi
   sudo ln -rsf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   sudo systemctl enable --now systemd-resolved
-  
+
+  print_info "Configuring Powertop service..."
+  sudo systemctl enable --now powertop.service
+
   print_info "Applying tas2781 speaker driver audio fix..."
   curl -s https://raw.githubusercontent.com/DanielWeiner/tas2781-fix-16IRX8H/refs/heads/main/install.sh | bash -s --
-  
+
   print_success "Post-install configuration finished successfully!"
   print_warn "Please log out and log back in to apply your new docker group permissions."
 }
@@ -144,15 +149,15 @@ ensure_files_exist() {
 
 fix_packages() {
   ensure_files_exist
-  
+
   # Get list of tracked packages (included + excluded)
   local tracked_file="/tmp/tracked_pkgs"
-  sort included_packages excluded_packages | uniq > "$tracked_file"
-  
+  sort included_packages excluded_packages | uniq >"$tracked_file"
+
   # Get list of live installed packages
   local live_file="/tmp/live_pkgs"
-  yay -Qeq | sort > "$live_file"
-  
+  yay -Qeq | sort >"$live_file"
+
   # Find packages installed on system but not tracked
   local untracked=()
   while IFS= read -r pkg; do
@@ -160,7 +165,7 @@ fix_packages() {
       untracked+=("$pkg")
     fi
   done < <(comm -13 "$tracked_file" "$live_file")
-  
+
   # Find packages tracked in lists but NOT installed on system (deletions)
   local missing=()
   while IFS= read -r pkg; do
@@ -168,24 +173,24 @@ fix_packages() {
       missing+=("$pkg")
     fi
   done < <(comm -23 "$tracked_file" "$live_file")
-  
+
   # Clean up temp files
   rm -f "$tracked_file" "$live_file"
-  
+
   local total_diff=$((${#untracked[@]} + ${#missing[@]}))
   if [ "$total_diff" -eq 0 ]; then
     print_success "System is fully in sync with tracked packages. Nothing to fix!"
     return
   fi
-  
+
   echo -e "\n${C_BOLD}${C_CYAN}--- PkgMan Conflict Resolver TUI ---${C_RESET}"
   echo -e "Found ${C_YELLOW}${total_diff}${C_RESET} package discrepancies.\n"
-  
+
   # Process untracked packages (installed but not tracked)
   if [ "${#untracked[@]}" -gt 0 ]; then
     echo -e "${C_BOLD}${C_YELLOW}Untracked Packages (Installed on system, but not in included/excluded lists):${C_RESET}"
     echo -e "${C_GRAY}-------------------------------------------------------------------------${C_RESET}"
-    
+
     for pkg in "${untracked[@]}"; do
       echo -e "\nPackage: ${C_BOLD}${C_CYAN}${pkg}${C_RESET}"
       while true; do
@@ -194,46 +199,46 @@ fix_packages() {
         echo -e "  [${C_RED}r${C_RESET}] Remove/Uninstall from system"
         echo -e "  [${C_YELLOW}s${C_RESET}] Skip / Do nothing"
         read -rp "Choose action [i/e/r/s]: " choice
-        
+
         case "$choice" in
-          [iI])
-            echo "$pkg" >> included_packages
-            sort -u included_packages -o included_packages
-            print_success "Added $pkg to included_packages."
-            break
-            ;;
-          [eE])
-            echo "$pkg" >> excluded_packages
-            sort -u excluded_packages -o excluded_packages
-            print_success "Added $pkg to excluded_packages."
-            break
-            ;;
-          [rR])
-            print_info "Uninstalling $pkg..."
-            if yay -Rns --noconfirm "$pkg"; then
-              print_success "Uninstalled $pkg."
-            else
-              print_err "Failed to uninstall $pkg."
-            fi
-            break
-            ;;
-          [sS])
-            print_info "Skipped $pkg."
-            break
-            ;;
-          *)
-            print_err "Invalid choice. Please choose i, e, r, or s."
-            ;;
+        [iI])
+          echo "$pkg" >>included_packages
+          sort -u included_packages -o included_packages
+          print_success "Added $pkg to included_packages."
+          break
+          ;;
+        [eE])
+          echo "$pkg" >>excluded_packages
+          sort -u excluded_packages -o excluded_packages
+          print_success "Added $pkg to excluded_packages."
+          break
+          ;;
+        [rR])
+          print_info "Uninstalling $pkg..."
+          if yay -Rns --noconfirm "$pkg"; then
+            print_success "Uninstalled $pkg."
+          else
+            print_err "Failed to uninstall $pkg."
+          fi
+          break
+          ;;
+        [sS])
+          print_info "Skipped $pkg."
+          break
+          ;;
+        *)
+          print_err "Invalid choice. Please choose i, e, r, or s."
+          ;;
         esac
       done
     done
   fi
-  
+
   # Process missing packages (tracked in lists but not installed)
   if [ "${#missing[@]}" -gt 0 ]; then
     echo -e "\n${C_BOLD}${C_YELLOW}Missing Packages (Tracked in included/excluded, but not installed on system):${C_RESET}"
     echo -e "${C_GRAY}--------------------------------------------------------------------------${C_RESET}"
-    
+
     for pkg in "${missing[@]}"; do
       local in_included=false
       local in_excluded=false
@@ -243,7 +248,7 @@ fix_packages() {
       if grep -q "^${pkg}$" excluded_packages; then
         in_excluded=true
       fi
-      
+
       echo -e "\nPackage: ${C_BOLD}${C_CYAN}${pkg}${C_RESET}"
       if [ "$in_included" = true ] && [ "$in_excluded" = true ]; then
         echo -e "${C_GRAY}(Tracked in both included_packages and excluded_packages but not installed)${C_RESET}"
@@ -252,10 +257,10 @@ fix_packages() {
       else
         echo -e "${C_GRAY}(Tracked in excluded_packages but not installed)${C_RESET}"
       fi
-      
+
       while true; do
         echo -e "  [${C_GREEN}i${C_RESET}] Install on system"
-        
+
         if [ "$in_included" = true ] && [ "$in_excluded" = true ]; then
           echo -e "  [${C_RED}r${C_RESET}] Remove from both lists"
         elif [ "$in_included" = true ]; then
@@ -263,51 +268,51 @@ fix_packages() {
         else
           echo -e "  [${C_RED}r${C_RESET}] Remove from ${C_BOLD}excluded_packages${C_RESET}"
         fi
-        
+
         echo -e "  [${C_YELLOW}s${C_RESET}] Skip / Do nothing"
         read -rp "Choose action [i/r/s]: " choice
-        
+
         case "$choice" in
-          [iI])
-            print_info "Installing $pkg..."
-            if yay -S --noconfirm "$pkg"; then
-              print_success "Installed $pkg."
-            else
-              print_err "Failed to install $pkg."
-            fi
-            break
-            ;;
-          [rR])
-            if [ "$in_included" = true ]; then
-              sed -i "/^${pkg}$/d" included_packages
-              print_success "Removed $pkg from included_packages."
-            fi
-            if [ "$in_excluded" = true ]; then
-              sed -i "/^${pkg}$/d" excluded_packages
-              print_success "Removed $pkg from excluded_packages."
-            fi
-            break
-            ;;
-          [sS])
-            print_info "Skipped $pkg."
-            break
-            ;;
-          *)
-            print_err "Invalid choice. Please choose i, r, or s."
-            ;;
+        [iI])
+          print_info "Installing $pkg..."
+          if yay -S --noconfirm "$pkg"; then
+            print_success "Installed $pkg."
+          else
+            print_err "Failed to install $pkg."
+          fi
+          break
+          ;;
+        [rR])
+          if [ "$in_included" = true ]; then
+            sed -i "/^${pkg}$/d" included_packages
+            print_success "Removed $pkg from included_packages."
+          fi
+          if [ "$in_excluded" = true ]; then
+            sed -i "/^${pkg}$/d" excluded_packages
+            print_success "Removed $pkg from excluded_packages."
+          fi
+          break
+          ;;
+        [sS])
+          print_info "Skipped $pkg."
+          break
+          ;;
+        *)
+          print_err "Invalid choice. Please choose i, r, or s."
+          ;;
         esac
       done
     done
   fi
-  
+
   print_success "\nAll conflicts processed!"
 }
 
 case $1 in
-"save"|"update")
+"save" | "update")
   ensure_files_exist
   print_info "Updating tracked package list..."
-  yay -Qeq | grep -vxf excluded_packages | tee included_packages > /dev/null
+  yay -Qeq | grep -vxf excluded_packages | tee included_packages >/dev/null
   print_success "Tracked package list updated in 'included_packages'."
   ;;
 
@@ -325,23 +330,23 @@ case $1 in
   fix_packages
   ;;
 
-"yay"|"iyay")
+"yay" | "iyay")
   install_yay
   ;;
 
-"install"|"iincl")
+"install" | "iincl")
   install_included
   ;;
 
-"apply"|"stow")
+"apply" | "stow")
   stow_script
   ;;
 
-"setup"|"posti")
+"setup" | "posti")
   post_install
   ;;
 
-"help"|"--help"|"-h")
+"help" | "--help" | "-h")
   show_help
   ;;
 

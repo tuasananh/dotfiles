@@ -5,6 +5,7 @@ export EDITOR=nvim
 [[ $- != *i* ]] && return
 
 if uwsm check may-start; then
+  export UWSM_SILENT_START=1
   uwsm start hyprland.desktop
 fi
 

@@ -2,10 +2,12 @@
 act
 audacity
 auto-cpufreq-git
+bear
 blesh-git
 brave-bin
 brightnessctl
 btop
+capt-src
 catppuccin-gtk-theme-mocha
 chromium
 clang
@@ -32,6 +34,7 @@ gnome-keyring
 go
 gptfdisk
 hyperfine
+hyprdynamicmonitors-bin
 hyprland
 hyprpicker
 hyprpolkitagent
@@ -102,6 +105,7 @@ vpl-gpu-rt
 vulkan-intel
 waybar
 wev
+wireshark-qt
 wl-clipboard
 xarchiver
 xdg-desktop-portal-gtk

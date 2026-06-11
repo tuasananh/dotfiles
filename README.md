@@ -1,5 +1,7 @@
 # Legion Pro 7i 16IRX8H Arch Linux Installation
+
 <!--toc:start-->
+
 - [Legion Pro 7i 16IRX8H Arch Linux Installation](#legion-pro-7i-16irx8h-arch-linux-installation)
   - [Prerequisites](#prerequisites)
     - [Getting an installation medium](#getting-an-installation-medium)
@@ -22,7 +24,7 @@
     - [Setup nvim](#setup-nvim)
     - [Setup theme](#setup-theme)
   - [That's it, we're done](#thats-it-were-done)
-<!--toc:end-->
+  <!--toc:end-->
 
 ## Prerequisites
 
@@ -141,13 +143,13 @@ Go through with the `archinstall` script. My choices:
 
 - Setup the mirrorlist
 - Best-effort default partition layout with btrfs, luks with snapper, use the
-standard subvolumes
+  standard subvolumes
 - Swap on zram with zstd
 - Limine bootloader
 - Profile: Minimal
 - Kernel: linux
 - For applications, enable Bluetooth, pipewire, print service, and firewalld,
-and all fonts
+  and all fonts
 - For network, use network manager with iwd backend
 
 Then just install. After installation, just reboot to the newly installed OS
@@ -206,6 +208,7 @@ After that, to apply user and system configurations:
 
 > [!NOTE]
 > `pkgman apply` will:
+>
 > 1. Use GNU Stow to symlink home directory configs (`nvim`, `hypr`, `kitty`, etc.) to `~`.
 > 2. Use `syssync` (our custom system sync tool) to safely copy and track system-wide configurations (`/etc` and `/boot`) with correct permissions and root ownership.
 > 3. Install the `syssync` background systemd service to sync any edits you make under `system/` instantly.
@@ -216,23 +219,32 @@ For configurations in `/etc` and `/boot`, we use a custom-built Python utility c
 
 You can run `syssync` manually to manage system files:
 
-* **Show current status** (compares source files with live system files):
+- **Show current status** (compares source files with live system files):
+
   ```bash
   ./syssync status
   ```
-* **View colorized line-by-line diffs**:
+
+- **View colorized line-by-line diffs**:
+
   ```bash
   ./syssync diff
   ```
-* **Pull active system-side changes back into your dotfiles**:
+
+- **Pull active system-side changes back into your dotfiles**:
+
   ```bash
   ./syssync pull
   ```
-* **Manually push your dotfiles to the system** (requires sudo):
+
+- **Manually push your dotfiles to the system** (requires sudo):
+
   ```bash
   sudo ./syssync push
   ```
-* **Manually install the real-time background syncing daemon** (requires sudo):
+
+- **Manually install the real-time background syncing daemon** (requires sudo):
+
   ```bash
   sudo ./syssync install-service
   ```
@@ -241,18 +253,23 @@ You can run `syssync` manually to manage system files:
 
 To maintain consistency between your dotfiles repository package lists and your actual system packages, you can use these `pkgman` developer workflow commands:
 
-* **Show package discrepancies**:
+- **Show package discrepancies**:
+
   ```bash
   ./pkgman diff
   ```
-* **Launch the Interactive Conflict Resolver TUI**:
+
+- **Launch the Interactive Conflict Resolver TUI**:
   Runs a terminal-based interactive TUI prompting you for every discrepancy (untracked live packages or missing tracked packages) and allows you to add/ignore/install/remove them instantly:
+
   ```bash
   ./pkgman fix
   # OR
   ./pkgman diff --fix
   ```
-* **Save package tracking list** (based on explicitly installed packages, excluding ignored packages):
+
+- **Save package tracking list** (based on explicitly installed packages, excluding ignored packages):
+
   ```bash
   ./pkgman save
   ```
@@ -264,6 +281,14 @@ Run this:
 ```bash
 ./pkgman setup
 ```
+
+This will run post-installation configuration steps including:
+
+1. **User Services**: Enable and start user-level services like `waybar` and `hyprpolkitagent`.
+2. **Docker**: Set up the docker group, add the current user to it, and enable `docker.service`.
+3. **DNS Stub Resolver**: Enable and configure `systemd-resolved` for reliable, standard DNS resolution.
+4. **Powertop**: Enable and start `powertop.service` to apply automatic power-saving tunings while ensuring USB input devices (keyboards/mice) do not lag or auto-suspend.
+5. **Speaker Driver Fix**: Apply the `tas2781` smart amplifier audio driver fix.
 
 ### Configure Limine bootloader
 

@@ -1,0 +1,23 @@
+-- <<<<< TUI AUTO START
+{{range .Monitors}}
+-- Monitor: {{.Name}} ({{.Description}})
+-- Current format: {{.CurrentFormat}}
+-- Disabled: {{.Disabled}}
+{{end}}
+{{- $laptop := index .MonitorsByTag "laptop" -}}
+{{if isOnBattery}}
+hl.monitor({
+  output = "{{$laptop.Name}}",
+  mode = "2560x1600@60",
+  position = "auto",
+  scale = 1,
+})
+{{else}}
+hl.monitor({
+  output = "{{$laptop.Name}}",
+  mode = "2560x1600@240",
+  position = "auto",
+  scale = 1,
+})
+{{end}}
+-- <<<<< TUI AUTO END
