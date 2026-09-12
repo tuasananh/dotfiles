@@ -10,3 +10,8 @@ CompileFlags:
     - "-D_GLIBCXX_DEBUG"
     - "-D_GLIBCXX_DEBUG_PEDANTIC"
     - "-I/home/tuasananh/repos/CP/"
+
+Diagnostics:
+  # Enable all built-in clangd tweaks and warnings
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
