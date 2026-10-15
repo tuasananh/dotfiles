@@ -1,0 +1,269 @@
+#!/usr/bin/env python3
+"""
+fc-karaoke: Generate CapCut-style animated captions in FilmCraft.
+- Transcribes sequence dialogue (or uses existing transcript).
+- Opens Neovim to let you proofread and edit words.
+- Automatically appends a dedicated top video track above all existing tracks.
+- Chunks words into <= 5 words per screen (breaking on pauses/punctuation).
+- Generates stationary graphic text clips and highlights each word in yellow as spoken.
+"""
+
+import os
+import sys
+import json
+import argparse
+import tempfile
+import subprocess
+from typing import List, Dict, Any, Tuple
+
+# Default Configuration
+DEFAULT_BRIDGE_PORT = "127.0.0.1:9876"
+TICKS_PER_SEC = 254016000000
+
+TEMPLATE = {
+    "max_words_per_chunk": 5,
+    "max_pause_sec": 0.8,         # Pause duration that triggers a chunk break
+    "font": "Inter",
+    "font_style": "Bold",
+    "font_size": 68,
+    "text_color": "#FFFFFF",      # Base text color
+    "highlight_color": "#FFE600", # CapCut vibrant yellow
+    "all_caps": True,             # Display in UPPERCASE
+    "stroke": True,
+    "stroke_color": "#000000",
+    "stroke_width": 7.0,
+}
+
+def run_cmd(cmd: str, params: Dict[str, Any] = None, bridge: str = DEFAULT_BRIDGE_PORT) -> Any:
+    """Execute an engine command via filmcraft-cli bridge."""
+    args = ["filmcraft-cli", "--bridge", bridge, "exec", cmd]
+    if params:
+        args.append(json.dumps(params))
+    
+    try:
+        res = subprocess.run(args, capture_output=True, text=True, check=False)
+    except FileNotFoundError:
+        print("[!] Error: 'filmcraft-cli' was not found in PATH.")
+        sys.exit(1)
+
+    if res.returncode != 0:
+        err_msg = res.stderr.strip() or res.stdout.strip()
+        if "connection refused" in err_msg.lower() or "can't connect" in err_msg.lower():
+            print(f"[!] Error: Could not connect to FilmCraft on {bridge}.")
+            print("    Make sure FilmCraft is running with the control port open:")
+            print(f"    filmcraft --control {bridge.split(':')[-1]}")
+            sys.exit(1)
+        raise RuntimeError(f"Command '{cmd}' failed: {err_msg}")
+
+    try:
+        return json.loads(res.stdout)
+    except Exception:
+        return res.stdout
+
+def format_timestamp(ticks: int) -> str:
+    secs = ticks / TICKS_PER_SEC
+    m, s = divmod(secs, 60)
+    return f"{int(m):02d}:{s:05.2f}"
+
+def parse_timestamp(ts: str) -> int:
+    m, s = ts.split(":")
+    secs = int(m) * 60 + float(s)
+    return int(secs * TICKS_PER_SEC)
+
+def ensure_transcript(bridge: str) -> List[Dict[str, Any]]:
+    print("[*] Inspecting sequence transcript...")
+    data = run_cmd("transcript.inspect", {}, bridge=bridge)
+    words = data.get("words", [])
+    
+    if not words:
+        print("[!] No transcript found for the active sequence.")
+        ans = input("[-] Would you like to run Whisper transcription now? [Y/n]: ").strip().lower()
+        if ans in ("", "y", "yes"):
+            print("[*] Transcribing sequence audio with Whisper (this may take a few seconds)...")
+            run_cmd("transcript.generate", {}, bridge=bridge)
+            data = run_cmd("transcript.inspect", {}, bridge=bridge)
+            words = data.get("words", [])
+            if not words:
+                print("[!] Transcription finished, but no speech words were detected.")
+                sys.exit(0)
+        else:
+            print("Aborted.")
+            sys.exit(0)
+            
+    print(f"[✓] Found {len(words)} transcribed words.")
+    return words
+
+def edit_in_neovim(words: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Opens word list in Neovim for proofreading."""
+    with tempfile.NamedTemporaryFile(mode="w+", suffix=".txt", delete=False) as tf:
+        tf.write("# FilmCraft Transcript Proofreader\n")
+        tf.write("# Format: <MM:SS.ss> | <word>\n")
+        tf.write("# Edit typos or punctuation on the right. Do NOT edit timestamps.\n")
+        tf.write("# Save and exit (:wq) to proceed, or exit with error (:cq) to cancel.\n\n")
+        for w in words:
+            ts = format_timestamp(w["start"])
+            tf.write(f"{ts} | {w['text']}\n")
+        tmp_path = tf.name
+
+    editor = os.environ.get("EDITOR", "nvim")
+    print(f"[*] Opening transcript in {editor}...")
+    ret = subprocess.call([editor, tmp_path])
+    if ret != 0:
+        print("[!] Editor exited with non-zero status. Caption generation aborted.")
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        sys.exit(1)
+
+    updated_words = []
+    with open(tmp_path, "r") as f:
+        lines = f.readlines()
+    if os.path.exists(tmp_path):
+        os.remove(tmp_path)
+
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "|" in line:
+            ts_str, text_str = line.split("|", 1)
+            try:
+                t_start = parse_timestamp(ts_str.strip())
+            except ValueError:
+                continue
+            text = text_str.strip()
+            if text:
+                # Handle cases where multiple words were written on one line
+                parts = text.split()
+                for p in parts:
+                    updated_words.append({"start": t_start, "text": p})
+
+    if not updated_words:
+        print("[!] No words found in edited file.")
+        sys.exit(1)
+
+    # Reconstruct end timestamps
+    for i in range(len(updated_words)):
+        if i + 1 < len(updated_words):
+            updated_words[i]["end"] = updated_words[i + 1]["start"]
+        else:
+            updated_words[i]["end"] = updated_words[i]["start"] + int(0.4 * TICKS_PER_SEC)
+
+    return updated_words
+
+def chunk_words(words: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+    """Group into <= 5 words per chunk, breaking at pauses and sentence endings."""
+    chunks = []
+    current_chunk = []
+    max_w = TEMPLATE["max_words_per_chunk"]
+    max_pause_ticks = int(TEMPLATE["max_pause_sec"] * TICKS_PER_SEC)
+
+    for i, w in enumerate(words):
+        current_chunk.append(w)
+        ends_sentence = w["text"].endswith((".", "!", "?"))
+        long_pause = False
+        if i + 1 < len(words):
+            pause = words[i + 1]["start"] - w["end"]
+            if pause >= max_pause_ticks:
+                long_pause = True
+
+        if len(current_chunk) >= max_w or ends_sentence or long_pause:
+            chunks.append(current_chunk)
+            current_chunk = []
+
+    if current_chunk:
+        chunks.append(current_chunk)
+    return chunks
+
+def create_top_caption_track(bridge: str) -> int:
+    """Appends a new video track at the top and returns its 0-based index."""
+    seq_info = run_cmd("sequence.inspect", {}, bridge=bridge)
+    existing_video_tracks = seq_info.get("video", [])
+    new_track_idx = len(existing_video_tracks)
+    track_num = new_track_idx + 1
+
+    print(f"[*] Creating dedicated caption track V{track_num} at the top...")
+    run_cmd("sequence.addTracks", {
+        "video": 1,
+        "videoAfter": "last",
+        "audio": 0
+    }, bridge=bridge)
+
+    return new_track_idx
+
+def generate_karaoke_graphics(chunks: List[List[Dict[str, Any]]], bridge: str):
+    caption_track_idx = create_top_caption_track(bridge)
+    total_clips = sum(len(c) for c in chunks)
+    print(f"[*] Generating {len(chunks)} caption groups ({total_clips} graphic slices) on track V{caption_track_idx + 1}...")
+
+    generated = 0
+    for chunk in chunks:
+        display_words = [w["text"].upper() if TEMPLATE["all_caps"] else w["text"] for w in chunk]
+        full_text = " ".join(display_words)
+
+        char_ranges = []
+        c_idx = 0
+        for w_str in display_words:
+            char_ranges.append((c_idx, c_idx + len(w_str)))
+            c_idx += len(w_str) + 1
+
+        for i, w in enumerate(chunk):
+            start_tick = w["start"]
+            end_tick = chunk[i + 1]["start"] if i + 1 < len(chunk) else w["end"]
+            dur_sec = max(0.04, (end_tick - start_tick) / TICKS_PER_SEC)
+            start_sec = start_tick / TICKS_PER_SEC
+
+            # Place stationary graphic text clip
+            clip_res = run_cmd("graphics.newText", {
+                "text": full_text,
+                "time": start_sec,
+                "seconds": dur_sec,
+                "track": caption_track_idx,
+                "font": TEMPLATE["font"],
+                "fontStyle": TEMPLATE["font_style"],
+                "size": TEMPLATE["font_size"],
+            }, bridge=bridge)
+            clip_id = clip_res.get("clip")
+            if not clip_id:
+                continue
+
+            # Apply stroke / outline for readability
+            if TEMPLATE["stroke"]:
+                run_cmd("graphics.set", {
+                    "clip": clip_id,
+                    "layer": 0,
+                    "props": {
+                        "stroke": True,
+                        "stroke_color": TEMPLATE["stroke_color"],
+                        "stroke_width": TEMPLATE["stroke_width"]
+                    }
+                }, bridge=bridge)
+
+            # Highlight the currently spoken word
+            c_start, c_end = char_ranges[i]
+            run_cmd("graphics.setCharStyle", {
+                "clip": clip_id,
+                "layer": 0,
+                "start": c_start,
+                "end": c_end,
+                "style": {"color": TEMPLATE["highlight_color"]}
+            }, bridge=bridge)
+
+            generated += 1
+
+    print(f"[✓] Generated {generated} caption slices on track V{caption_track_idx + 1}!")
+
+def main():
+    parser = argparse.ArgumentParser(description="CapCut-style karaoke captions for FilmCraft")
+    parser.add_argument("--port", default="9876", help="FilmCraft control port (default: 9876)")
+    parser.add_argument("--host", default="127.0.0.1", help="FilmCraft control host (default: 127.0.0.1)")
+    args = parser.parse_args()
+
+    bridge = f"{args.host}:{args.port}"
+
+    words = ensure_transcript(bridge)
+    edited_words = edit_in_neovim(words)
+    chunks = chunk_words(edited_words)
+    generate_karaoke_graphics(chunks, bridge)
+
+if __name__ == "__main__":
+    main()
